@@ -1,0 +1,25 @@
+export type CurrencySymbol = "USD" | "UAH"
+
+export interface ProductPriceModel {
+  value: number
+  symbol: CurrencySymbol
+  isDefault: boolean
+}
+
+export interface ProductModel {
+  id: number
+  serialNumber: number
+  isNew: boolean
+  photo: string
+  title: string
+  type: string
+  specification: string
+  guarantee: {
+    start: string
+    end: string
+  }
+  order: number
+  orderTitle: string
+  date: string
+  price: ProductPriceModel[]
+}
