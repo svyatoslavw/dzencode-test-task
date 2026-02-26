@@ -13,9 +13,7 @@ const parseId = async ({ params }: Params): Promise<number | null> => {
   const resolvedParams = await params
   const id = Number(resolvedParams.id)
 
-  if (!Number.isInteger(id) || id <= 0) {
-    return null
-  }
+  if (!Number.isInteger(id) || id <= 0) return null
 
   return id
 }

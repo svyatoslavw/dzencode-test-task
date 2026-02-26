@@ -1,16 +1,19 @@
 "use client"
 
-import { useMutation } from "@tanstack/react-query"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AxiosError } from "axios"
+import { useMutation } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import { z } from "zod"
 
-import type { UserModel } from "@/entities/user/model/types"
-import { apiRequest, BaseResponse, DEFAULT_ERROR } from "@/shared/api/request"
+import type { AuthMode, UserModel } from "@/entities/user"
+import { getErrorMessage } from "@/shared/api"
+import { apiRequest } from "@/shared/api/request"
 
-export type AuthMode = "login" | "register"
+interface AuthResponse {
+  user: UserModel
+}
 
 const authSchema = z.object({
   name: z.string().trim().min(2, "Введите имя").optional(),
@@ -20,23 +23,7 @@ const authSchema = z.object({
 
 export type AuthFormValues = z.infer<typeof authSchema>
 
-interface AuthResponse {
-  user: UserModel
-}
-
-const getErrorMessage = (error: unknown): string => {
-  if (error instanceof AxiosError) {
-    return (error as AxiosError<BaseResponse>).response?.data?.message ?? DEFAULT_ERROR
-  }
-
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return DEFAULT_ERROR
-}
-
-export const useAuthForm = (mode: AuthMode) => {
+export const useAuthForm = ({ mode }: { mode: AuthMode }) => {
   const router = useRouter()
 
   const form = useForm<AuthFormValues>({
@@ -76,13 +63,12 @@ export const useAuthForm = (mode: AuthMode) => {
 
   const onSubmit = form.handleSubmit((values) => {
     if (mode === "register" && !values.name) {
-      form.setError("name", {
-        message: "Введите имя"
-      })
+      form.setError("name", { message: "Введите имя" })
       return
     }
 
     mutation.mutate(values)
+    toast.success(mode === "register" ? "Регистрация успешна!" : "Вход выполнен!")
   })
 
   return {

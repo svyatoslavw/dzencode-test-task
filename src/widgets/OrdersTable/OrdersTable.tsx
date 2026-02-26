@@ -14,6 +14,8 @@ import {
   ModalTitle
 } from "@/shared/ui/modal/modal"
 
+import styles from "./OrdersTable.module.css"
+
 const parseDate = (value: string): Date | null => {
   const normalized = value.includes("T") ? value : value.replace(" ", "T")
   const date = new Date(normalized)
@@ -55,7 +57,7 @@ const formatFullDate = (value: string): string => {
 }
 
 const formatProductPrices = (product: ProductModel): string => {
-  return product.price.map((item) => `${item.value} ${item.symbol}`).join(" / ")
+  return product.price.map((item) => `${item.value.toFixed(2)} ${item.symbol}`).join(" / ")
 }
 
 export const OrdersTable = () => {
@@ -109,20 +111,19 @@ export const OrdersTable = () => {
   return (
     <>
       <div className="row g-3">
-        <div className={selectedOrderId ? "col-12 col-xxl-6" : "col-12"}>
-          <div className="table-responsive border rounded-3 bg-white">
-            <table className="table table-hover align-middle mb-0">
+        <div className={safeSelectedOrderId ? "col-12 col-xxl-6" : "col-12"}>
+          <div className={`overflow-auto ${styles.tableWrap}`}>
+            <table className={`table table-hover align-middle mb-0`}>
               <thead className="table-light">
                 <tr>
-                  <th scope="col">Приход</th>
-                  <th scope="col">Продуктов</th>
-                  <th scope="col">Дата</th>
-                  <th scope="col">Сумма</th>
-                  <th scope="col" className="text-end">
-                    Действия
-                  </th>
+                  <th>Приход</th>
+                  <th>Продукты</th>
+                  <th>Дата</th>
+                  <th>Сумма</th>
+                  <th className="text-end">Действия</th>
                 </tr>
               </thead>
+
               <tbody>
                 {data?.map((order) => {
                   const isSelected = safeSelectedOrderId === order.id
@@ -134,7 +135,11 @@ export const OrdersTable = () => {
                       style={{ cursor: "pointer" }}
                       onClick={() => setSelectedOrderId(order.id)}
                     >
-                      <td className="fw-semibold text-decoration-underline">{order.title}</td>
+                      <td>
+                        <div className={`fw-semibold text-decoration-underline ${styles.clamp}`}>
+                          {order.title}
+                        </div>
+                      </td>
                       <td>{order.productsCount}</td>
                       <td>
                         <div className="d-flex flex-column">
@@ -145,7 +150,7 @@ export const OrdersTable = () => {
                         </div>
                       </td>
                       <td>
-                        <div className="d-flex flex-column">
+                        <div className="d-flex flex-column text-nowrap">
                           <span className="small text-body-secondary">{order.totalUSD} USD</span>
                           <span>{order.totalUAH} UAH</span>
                         </div>
@@ -170,9 +175,9 @@ export const OrdersTable = () => {
           </div>
         </div>
 
-        {selectedOrderId !== null && (
-          <div className="col-12 col-xxl-6">
-            <section className="card border-0 shadow-sm h-100">
+        {safeSelectedOrderId !== null && (
+          <div className="col-12 position-relative col-xxl-6">
+            <section className="card position-fixed border-0 shadow-sm max-h-75">
               <div className="card-body d-flex flex-column gap-2 p-3">
                 <div className="d-flex justify-content-between align-items-start gap-2">
                   <div>
@@ -218,10 +223,7 @@ export const OrdersTable = () => {
                       </div>
                     </div>
 
-                    <div
-                      className="table-responsive border rounded-3"
-                      style={{ maxHeight: "360px" }}
-                    >
+                    <div className="table-responsive border rounded-3">
                       <table className="table table-sm align-middle mb-0 small">
                         <thead className="table-light">
                           <tr>

@@ -10,6 +10,9 @@ export interface ProductModel {
   id: number
   serialNumber: number
   isNew: boolean
+  inStock: boolean
+  quality: "new" | "used"
+  seller: string
   photo: string
   title: string
   type: string

@@ -2,13 +2,11 @@
 
 import Link from "next/link"
 
-import { AuthMode, useAuthForm } from "./useAuthForm"
+import type { AuthMode } from "@/entities/user"
+import { FormField } from "@/shared/ui"
+import { useAuthForm } from "./useAuthForm"
 
-interface AuthFormProps {
-  mode: AuthMode
-}
-
-export const AuthForm = ({ mode }: AuthFormProps) => {
+export const AuthForm = ({ mode }: { mode: AuthMode }) => {
   const {
     form: {
       register,
@@ -17,62 +15,59 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
     onSubmit,
     isPending,
     serverError
-  } = useAuthForm(mode)
+  } = useAuthForm({ mode })
 
-  const isRegisterMode = mode === "register"
+  const isRegister = mode === "register"
+
+  const title = isRegister ? "Регистрация" : "Вход"
+  const submitText = isPending ? "Загрузка..." : isRegister ? "Создать аккаунт" : "Войти"
+  const switchText = isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"
+  const switchHref = isRegister ? "/login" : "/register"
+  const switchLinkText = isRegister ? "Войти" : "Зарегистрироваться"
 
   return (
     <div className="card border-0 shadow-sm" style={{ width: "min(100%, 420px)" }}>
       <div className="card-body p-4">
-        <h1 className="h4 mb-3">{isRegisterMode ? "Регистрация" : "Вход"}</h1>
+        <h1 className="h4 mb-3">{title}</h1>
 
         <form onSubmit={onSubmit} className="d-grid gap-3">
-          {isRegisterMode && (
-            <div>
-              <label className="form-label">Имя</label>
-              <input
-                type="text"
-                className={`form-control ${errors.name ? "is-invalid" : ""}`}
-                {...register("name")}
-                placeholder="Ваше имя"
-              />
-              {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-            </div>
+          {isRegister && (
+            <FormField
+              label="Имя"
+              type="text"
+              placeholder="Ваше имя"
+              registerProps={register("name")}
+              error={errors.name}
+            />
           )}
 
-          <div>
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
-              {...register("email")}
-              placeholder="you@example.com"
-            />
-            {errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
-          </div>
+          <FormField
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
+            registerProps={register("email")}
+            error={errors.email}
+          />
 
-          <div>
-            <label className="form-label">Пароль</label>
-            <input
-              type="password"
-              className={`form-control ${errors.password ? "is-invalid" : ""}`}
-              {...register("password")}
-              placeholder="******"
-            />
-            {errors.password && <div className="invalid-feedback">{errors.password.message}</div>}
-          </div>
+          <FormField
+            label="Пароль"
+            type="password"
+            placeholder="******"
+            registerProps={register("password")}
+            error={errors.password}
+          />
 
           {serverError && <div className="alert alert-danger mb-0">{serverError}</div>}
 
           <button type="submit" disabled={isPending} className="btn btn-dark">
-            {isPending ? "Загрузка..." : isRegisterMode ? "Создать аккаунт" : "Войти"}
+            {submitText}
           </button>
         </form>
 
         <p className="small text-body-secondary mt-3 mb-0">
-          {isRegisterMode ? "Уже есть аккаунт?" : "Нет аккаунта?"}{" "}
-          <Link href={isRegisterMode ? "/login" : "/register"} className="link-primary">
-            {isRegisterMode ? "Войти" : "Зарегистрироваться"}
+          {switchText}{" "}
+          <Link href={switchHref} className="link-primary">
+            {switchLinkText}
           </Link>
         </p>
       </div>

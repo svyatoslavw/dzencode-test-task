@@ -30,6 +30,9 @@ export interface ProductEntity {
   id: number
   serialNumber: number
   isNew: boolean
+  inStock: boolean
+  quality: "new" | "used"
+  seller: string
   photo: string
   title: string
   type: string
@@ -62,6 +65,9 @@ interface ProductRow {
   id: number
   serial_number: number
   is_new: number
+  in_stock: number
+  quality: string
+  seller: string
   photo: string
   title: string
   type: string
@@ -106,6 +112,9 @@ const mapProductRow = (row: ProductRow, prices: ProductPrice[]): ProductEntity =
   id: row.id,
   serialNumber: row.serial_number,
   isNew: Boolean(row.is_new),
+  inStock: Boolean(row.in_stock),
+  quality: row.quality === "used" ? "used" : "new",
+  seller: row.seller,
   photo: row.photo,
   title: row.title,
   type: row.type,
@@ -141,6 +150,9 @@ const createTables = (db: Database.Database): void => {
       id INTEGER PRIMARY KEY,
       serial_number INTEGER NOT NULL,
       is_new INTEGER NOT NULL,
+      in_stock INTEGER NOT NULL DEFAULT 1,
+      quality TEXT NOT NULL DEFAULT 'new',
+      seller TEXT NOT NULL DEFAULT 'Unknown seller',
       photo TEXT NOT NULL,
       title TEXT NOT NULL,
       type TEXT NOT NULL,
@@ -164,110 +176,6 @@ const createTables = (db: Database.Database): void => {
   `)
 }
 
-const seedInitialData = (db: Database.Database): void => {
-  const hasOrders = db.prepare("SELECT COUNT(*) AS count FROM orders").get() as {
-    count: number
-  }
-
-  if (hasOrders.count > 0) {
-    return
-  }
-
-  const now = "2017-06-29 12:09:33"
-
-  const insertOrder = db.prepare(
-    "INSERT INTO orders(id, title, date, description) VALUES (?, ?, ?, ?)"
-  )
-  const insertProduct = db.prepare(
-    `INSERT INTO products(
-      id,
-      serial_number,
-      is_new,
-      photo,
-      title,
-      type,
-      specification,
-      guarantee_start,
-      guarantee_end,
-      order_id,
-      date
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  )
-  const insertPrice = db.prepare(
-    "INSERT INTO product_prices(product_id, value, symbol, is_default) VALUES (?, ?, ?, ?)"
-  )
-
-  const seedTx = db.transaction(() => {
-    insertOrder.run(1, "Order 1", now, "desc")
-    insertOrder.run(2, "Order 2", now, "desc")
-    insertOrder.run(3, "Order 3", now, "desc")
-
-    insertProduct.run(
-      1,
-      1234,
-      1,
-      "pathToFile.jpg",
-      "Product 1",
-      "Monitors",
-      "Specification 1",
-      now,
-      now,
-      1,
-      now
-    )
-    insertProduct.run(
-      2,
-      2567,
-      1,
-      "pathToFile.jpg",
-      "Product 2",
-      "Phones",
-      "Specification 2",
-      now,
-      now,
-      2,
-      now
-    )
-    insertProduct.run(
-      3,
-      3333,
-      0,
-      "pathToFile.jpg",
-      "Product 3",
-      "Monitors",
-      "Specification 3",
-      now,
-      now,
-      1,
-      now
-    )
-    insertProduct.run(
-      4,
-      4455,
-      1,
-      "pathToFile.jpg",
-      "Product 4",
-      "Accessories",
-      "Specification 4",
-      now,
-      now,
-      3,
-      now
-    )
-
-    insertPrice.run(1, 100, "USD", 0)
-    insertPrice.run(1, 2600, "UAH", 1)
-    insertPrice.run(2, 150, "USD", 1)
-    insertPrice.run(2, 3900, "UAH", 0)
-    insertPrice.run(3, 120, "USD", 1)
-    insertPrice.run(3, 3120, "UAH", 0)
-    insertPrice.run(4, 80, "USD", 1)
-    insertPrice.run(4, 2080, "UAH", 0)
-  })
-
-  seedTx()
-}
-
 const initDatabase = (): Database.Database => {
   if (database) {
     return database
@@ -280,7 +188,6 @@ const initDatabase = (): Database.Database => {
   database.pragma("foreign_keys = ON")
 
   createTables(database)
-  seedInitialData(database)
 
   return database
 }
@@ -405,6 +312,9 @@ export const getOrderDetails = (orderId: number): OrderDetails | null => {
         p.id,
         p.serial_number,
         p.is_new,
+        p.in_stock,
+        p.quality,
+        p.seller,
         p.photo,
         p.title,
         p.type,
@@ -460,6 +370,9 @@ export const listProducts = (type?: string): ProductEntity[] => {
             p.id,
             p.serial_number,
             p.is_new,
+            p.in_stock,
+            p.quality,
+            p.seller,
             p.photo,
             p.title,
             p.type,
@@ -481,6 +394,9 @@ export const listProducts = (type?: string): ProductEntity[] => {
             p.id,
             p.serial_number,
             p.is_new,
+            p.in_stock,
+            p.quality,
+            p.seller,
             p.photo,
             p.title,
             p.type,

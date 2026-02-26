@@ -1,6 +1,8 @@
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
+  --app-header-height: 64px;
+  --app-sidebar-width: 0px;
 }
 
 * ,
@@ -21,4 +23,16 @@ body {
   font-family: var(--font-geist-sans), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 992px) {
+  :root {
+    --app-sidebar-width: 25vw;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --app-sidebar-width: 16.666667vw;
+  }
 }

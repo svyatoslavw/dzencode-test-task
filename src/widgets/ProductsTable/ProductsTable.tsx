@@ -13,6 +13,8 @@ import {
   ModalTitle
 } from "@/shared/ui/modal/modal"
 
+import styles from "./ProductsTable.module.css"
+
 export const ProductsTable = () => {
   const [type, setType] = useState<string>("")
   const [productToDelete, setProductToDelete] = useState<number | null>(null)
@@ -39,6 +41,23 @@ export const ProductsTable = () => {
     })
   }
 
+  const qualityLabel = (quality: "new" | "used") => (quality === "new" ? "Новый" : "БУ")
+
+  const formatDate = (value: string) => {
+    const date = new Date(value.includes("T") ? value : value.replace(" ", "T"))
+
+    if (Number.isNaN(date.getTime())) {
+      return value
+    }
+
+    return new Intl.DateTimeFormat("ru-RU").format(date)
+  }
+
+  const getPriceBySymbol = (
+    prices: { value: number; symbol: "USD" | "UAH" }[],
+    symbol: "USD" | "UAH"
+  ) => prices.find((price) => price.symbol === symbol)?.value
+
   return (
     <>
       <div className="row g-2 align-items-center mb-3">
@@ -47,7 +66,7 @@ export const ProductsTable = () => {
             Фильтр по типу
           </label>
         </div>
-        <div className="col-12 col-sm-4">
+        <div className="col-12 col-sm-2">
           <select
             id="type"
             className="form-select"
@@ -68,28 +87,63 @@ export const ProductsTable = () => {
       {isError && <div className="alert alert-danger mb-0">Ошибка: {(error as Error).message}</div>}
 
       {!isLoading && !isError && (
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead>
+        <div className={`overflow-auto table-responsive ${styles.tableWrap}`}>
+          <table className={`table table-hover align-middle mb-0 `}>
+            <thead className="table-light">
               <tr>
-                <th scope="col">Название</th>
-                <th scope="col">Тип</th>
-                <th scope="col">Приход</th>
-                <th scope="col">Цена</th>
-                <th scope="col" className="text-end">
-                  Действия
-                </th>
+                <th>Название</th>
+                <th>Тип</th>
+                <th>Остаток</th>
+                <th>Гарантия</th>
+                <th>Состояние</th>
+                <th>Продавец</th>
+                <th>Приход</th>
+                <th className="text-end">Цена</th>
+                <th className="text-end">Дата</th>
+                <th className="text-end">Действия</th>
               </tr>
             </thead>
+
             <tbody>
               {data?.map((product) => (
                 <tr key={product.id}>
-                  <td className="fw-semibold">{product.title}</td>
-                  <td>{product.type}</td>
-                  <td>{product.orderTitle}</td>
                   <td>
-                    {product.price.map((price) => `${price.value} ${price.symbol}`).join(" / ")}
+                    <div className={`${styles.clamp} fw-semibold`}>{product.title}</div>
                   </td>
+                  <td>
+                    <div className={styles.clamp}>{product.type}</div>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${product.inStock ? "text-bg-success" : "text-bg-secondary"}`}
+                    >
+                      {product.inStock ? "В наличии" : "Нет в наличии"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="d-flex flex-column text-nowrap">
+                      <span className="small text-body-secondary">
+                        {formatDate(product.guarantee.start)}
+                      </span>
+                      <span>{formatDate(product.guarantee.end)}</span>
+                    </div>
+                  </td>
+                  <td>{qualityLabel(product.quality)}</td>
+                  <td>
+                    <div className={styles.clamp}>{product.seller}</div>
+                  </td>
+                  <td>
+                    <div className={styles.clamp}>{product.orderTitle}</div>
+                  </td>
+                  <td className="text-end fw-semibold">
+                    <div className="d-flex flex-column text-nowrap">
+                      <span className="small text-body-secondary">
+                        {getPriceBySymbol(product.price, "USD") ?? "—"} USD
+                      </span>
+                      <span>{getPriceBySymbol(product.price, "UAH") ?? "—"} UAH</span>
+                    </div>
+                  </td>
+                  <td className="text-end text-nowrap">{formatDate(product.date)}</td>
                   <td className="text-end">
                     <button
                       type="button"

@@ -1,4 +1,4 @@
-import { AuthForm } from "@/features/auth/AuthForm"
+import { AuthForm } from "@/features/auth"
 
 import styles from "../styles/AuthPage.module.css"
 
