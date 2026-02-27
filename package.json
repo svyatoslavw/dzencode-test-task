@@ -7,6 +7,8 @@
     "build": "paraglide-js compile --project ./project.inlang --outdir ./src/shared/i18n --strategy cookie baseLocale && next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "seed": "node scripts/seed.mjs",
     "seed:big": "node scripts/seed.mjs --orders 300 --min-products 3 --max-products 12",
     "prepare": "husky",
@@ -30,6 +32,10 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@inlang/cli": "^3.0.0",
+    "@inlang/paraglide-js": "^2.13.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.19.33",
@@ -39,11 +45,11 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9.1.7",
+    "jsdom": "^28.1.0",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "typescript": "^5",
-    "@inlang/paraglide-js": "^2.13.0",
-    "@inlang/cli": "^3.0.0"
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": "22.x"

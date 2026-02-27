@@ -44,6 +44,13 @@ body {
   overflow: hidden;
 }
 
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
 .app-scroll-table {
   height: 100%;
   width: 100%;
@@ -71,6 +78,32 @@ body {
   overflow-x: auto;
 }
 
+.products-table .products-col-name {
+  width: 18%;
+}
+
+.products-table .products-col-stock {
+  width: 10%;
+}
+
+.products-table .products-col-condition {
+  width: 9%;
+}
+
+.products-table .products-col-seller {
+  width: 7%;
+}
+
+.products-table .products-col-date {
+  width: 11%;
+}
+
+.products-table .products-col-actions {
+  width: 7%;
+}
+
+/* Custom scrollbar styles */
+
 .app-scroll-table tbody {
   --sb-track-color: #ffffff;
   --sb-thumb-color: #cbcbcb;
@@ -95,19 +128,4 @@ body {
   .app-scroll-table tbody {
     scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
   }
-}
-
-.products-table thead th:nth-child(1),
-.products-table tbody td:nth-child(1) {
-  width: 18%;
-}
-
-.products-table thead th:nth-child(5),
-.products-table tbody td:nth-child(5) {
-  width: 7%;
-}
-
-.products-table thead th:nth-child(10),
-.products-table tbody td:nth-child(10) {
-  width: 7%;
 }

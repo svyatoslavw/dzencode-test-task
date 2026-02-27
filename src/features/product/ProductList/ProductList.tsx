@@ -23,19 +23,24 @@ const ProductList = ({
   return (
     <section className="col-12 h-100" style={{ minHeight: 0 }}>
       <div className="rounded-3 table-responsive border border-secondary border-opacity-25 h-100 d-flex flex-column overflow-hidden">
-        <table className="table align-middle app-scroll-table products-table">
+        <table className="table table-hover align-middle app-scroll-table products-table">
           <thead className="table-light">
             <tr>
-              <th>{m.products_column_name({}, { locale })}</th>
-              <th>{m.products_column_type({}, { locale })}</th>
-              <th>{m.products_column_stock({}, { locale })}</th>
+              <th className="products-col-name">{m.products_column_name({}, { locale })}</th>
+              <th className="products-col-stock">{m.products_column_stock({}, { locale })}</th>
               <th>{m.products_column_guarantee({}, { locale })}</th>
-              <th>{m.products_column_condition({}, { locale })}</th>
-              <th>{m.products_column_seller({}, { locale })}</th>
+              <th className="products-col-condition">
+                {m.products_column_condition({}, { locale })}
+              </th>
+              <th className="products-col-seller">{m.products_column_seller({}, { locale })}</th>
               <th>{m.products_column_order({}, { locale })}</th>
               <th className="text-end">{m.products_column_price({}, { locale })}</th>
-              <th className="text-end">{m.products_column_date({}, { locale })}</th>
-              <th className="text-end">{m.products_column_actions({}, { locale })}</th>
+              <th className="text-end products-col-date">
+                {m.products_column_date({}, { locale })}
+              </th>
+              <th className="text-end products-col-actions">
+                {m.products_column_actions({}, { locale })}
+              </th>
             </tr>
           </thead>
 

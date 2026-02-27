@@ -43,7 +43,7 @@ export const ProductCard = ({ product, locale, setProductIdToDelete }: ProductCa
 
   return (
     <tr key={product.id}>
-      <td>
+      <td className="products-col-name">
         <div className="d-flex align-items-center gap-2">
           <Image
             src={optimizedPhoto}
@@ -54,13 +54,10 @@ export const ProductCard = ({ product, locale, setProductIdToDelete }: ProductCa
             quality={100}
             className="rounded border object-fit-cover flex-shrink-0"
           />
-          <div className="fw-semibold clamp">{product.title}</div>
+          <div className="fw-semibold clamp-2">{product.title}</div>
         </div>
       </td>
-      <td>
-        <div className="clamp">{product.type}</div>
-      </td>
-      <td>
+      <td className="products-col-stock">
         <span className={`badge ${product.inStock ? "text-bg-success" : "text-bg-secondary"}`}>
           {product.inStock
             ? m.products_stock_in({}, { locale })
@@ -75,16 +72,16 @@ export const ProductCard = ({ product, locale, setProductIdToDelete }: ProductCa
           <span>{formatFullDate(product.guarantee.end, locale)}</span>
         </div>
       </td>
-      <td>
+      <td className="products-col-condition">
         {product.quality === "new"
           ? m.products_quality_new({}, { locale })
           : m.products_quality_used({}, { locale })}
       </td>
-      <td>
-        <div className="clamp">{product.seller}</div>
+      <td className="products-col-seller">
+        <div className="clamp-2">{product.seller}</div>
       </td>
       <td>
-        <div className="clamp">{product.orderTitle}</div>
+        <div className="clamp-2">{product.orderTitle}</div>
       </td>
       <td className="text-end fw-semibold">
         <div className="d-flex flex-column text-nowrap">
@@ -96,8 +93,10 @@ export const ProductCard = ({ product, locale, setProductIdToDelete }: ProductCa
           </span>
         </div>
       </td>
-      <td className="text-end text-nowrap">{formatFullDate(product.date, locale)}</td>
-      <td className="text-end">
+      <td className="text-end text-nowrap products-col-date">
+        {formatFullDate(product.date, locale)}
+      </td>
+      <td className="text-end products-col-actions">
         <button
           type="button"
           className="btn btn-sm btn-outline-danger"
