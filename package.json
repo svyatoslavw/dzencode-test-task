@@ -4,15 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "paraglide-js compile --project ./project.inlang --outdir ./src/shared/i18n --strategy cookie baseLocale && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "node scripts/seed.mjs",
     "seed:big": "node scripts/seed.mjs --orders 300 --min-products 3 --max-products 12",
-    "prepare": "husky"
+    "prepare": "husky",
+    "machine-translate": "inlang machine translate --project project.inlang"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@inlang/paraglide-js": "^2.13.0",
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
@@ -39,7 +41,9 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@inlang/paraglide-js": "^2.13.0",
+    "@inlang/cli": "^3.0.0"
   },
   "engines": {
     "node": "22.x"

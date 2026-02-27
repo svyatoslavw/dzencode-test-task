@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { paraglideMiddleware } from "@/shared/i18n/server"
 import { AUTH_COOKIE_NAME, verifyAuthToken } from "@/shared/lib/auth"
 
 const PUBLIC_ROUTES = new Set(["/login", "/register"])
@@ -23,37 +24,46 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value
   const hasValidToken = Boolean(token && verifyAuthToken(token))
 
-  if (pathname.startsWith("/api/")) {
-    if (pathname.startsWith("/api/auth/")) {
-      return NextResponse.next()
+  return paraglideMiddleware(request, ({ request: localizedRequest, locale }) => {
+    const localizedUrl = new URL(localizedRequest.url)
+    const localizedPathname = localizedUrl.pathname
+
+    const requestHeaders = new Headers(localizedRequest.headers)
+    requestHeaders.set("x-paraglide-locale", locale)
+    requestHeaders.set("x-paraglide-request-url", localizedRequest.url)
+
+    if (localizedPathname.startsWith("/api/")) {
+      if (localizedPathname.startsWith("/api/auth/")) {
+        return NextResponse.next({
+          request: { headers: requestHeaders }
+        })
+      }
+
+      if (!hasValidToken) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+      }
+
+      return NextResponse.next({
+        request: { headers: requestHeaders }
+      })
     }
 
-    if (!hasValidToken) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    if (localizedPathname === "/") {
+      return NextResponse.redirect(new URL(hasValidToken ? "/orders" : "/login", request.url))
     }
 
-    return NextResponse.next()
-  }
+    if (isPublicRoute(localizedPathname) && hasValidToken) {
+      return NextResponse.redirect(new URL("/orders", request.url))
+    }
 
-  if (pathname === "/") {
-    const url = request.nextUrl.clone()
-    url.pathname = hasValidToken ? "/orders" : "/login"
-    return NextResponse.redirect(url)
-  }
+    if (isProtectedRoute(localizedPathname) && !hasValidToken) {
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
 
-  if (isPublicRoute(pathname) && hasValidToken) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/orders"
-    return NextResponse.redirect(url)
-  }
-
-  if (isProtectedRoute(pathname) && !hasValidToken) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
-  }
-
-  return NextResponse.next()
+    return NextResponse.next({
+      request: { headers: requestHeaders }
+    })
+  })
 }
 
 export const config = {

@@ -1,3 +1,6 @@
+import { cookies } from "next/headers"
+
+import { assertIsLocale } from "@/shared/i18n/runtime"
 import { AppWrapper } from "@/widgets/AppWrapper"
 
 export default async function ApplicationLayout({ children }: { children: React.ReactNode }) {
@@ -7,5 +10,8 @@ export default async function ApplicationLayout({ children }: { children: React.
   //     redirect("/login")
   //   }
 
-  return <AppWrapper title="Orders & Products">{children}</AppWrapper>
+  const cookieStore = await cookies()
+  const locale = assertIsLocale(cookieStore.get("PARAGLIDE_LOCALE")?.value)
+
+  return <AppWrapper locale={locale}>{children}</AppWrapper>
 }

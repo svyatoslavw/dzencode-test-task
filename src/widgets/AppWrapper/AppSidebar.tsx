@@ -5,13 +5,16 @@ import { usePathname } from "next/navigation"
 
 import { UserCard } from "@/entities/user"
 import { useCurrentUserQuery, useLogoutMutation } from "@/shared/api"
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
 
-const navItems = [
-  { href: "/orders", label: "Приходы" },
-  { href: "/products", label: "Продукты" }
-]
+const navItems = [{ href: "/orders" }, { href: "/products" }]
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  locale: Locale
+}
+
+const AppSidebar = ({ locale }: AppSidebarProps) => {
   const pathname = usePathname()
   const logout = useLogoutMutation()
   const { data: user } = useCurrentUserQuery()
@@ -36,7 +39,9 @@ const AppSidebar = () => {
               href={item.href}
               className={`nav-link ${isActive ? "active" : "link-body-emphasis"}`}
             >
-              {item.label}
+              {item.href === "/orders"
+                ? m.nav_orders({}, { locale })
+                : m.nav_products({}, { locale })}
             </Link>
           )
         })}
@@ -50,7 +55,7 @@ const AppSidebar = () => {
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
         >
-          {logout.isPending ? "Выход..." : "Выйти"}
+          {logout.isPending ? m.logout_pending({}, { locale }) : m.logout_button({}, { locale })}
         </button>
       </div>
     </aside>

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "header_title": "Orders & Products",
+  "header_active_users": "Active: --",
+  "nav_orders": "Orders",
+  "nav_products": "Products",
+  "logout_button": "Log out",
+  "logout_pending": "Logging out..."
+}
