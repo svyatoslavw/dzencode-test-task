@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, type HTMLAttributes, type ReactNode } from "react"
+import { m } from "@/shared/i18n/messages"
+import { getLocale } from "@/shared/i18n/runtime"
 
 interface ModalProps {
   isOpen: boolean
@@ -124,7 +126,7 @@ export const ModalFooter = ({ children, className, ...props }: ModalSectionProps
 
 export const ModalCloseButton = ({
   onClick,
-  ariaLabel = "Закрыть",
+  ariaLabel = m.common_close({}, { locale: getLocale() }),
   disabled = false
 }: ModalCloseButtonProps) => {
   return (

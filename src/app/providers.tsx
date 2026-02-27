@@ -4,7 +4,9 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@ta
 import { AxiosError } from "axios"
 import { useState } from "react"
 
-import { BaseResponse, DEFAULT_ERROR } from "@/shared/api"
+import { BaseResponse } from "@/shared/api"
+import { m } from "@/shared/i18n/messages"
+import { getLocale } from "@/shared/i18n/runtime"
 import toast, { Toaster } from "react-hot-toast"
 
 interface Props {
@@ -15,7 +17,7 @@ export const Providers = ({ children }: Props) => {
   const onError = (cause: unknown) => {
     const { response } = cause as AxiosError<BaseResponse>
     console.log(response)
-    toast.error(response?.data?.message ?? DEFAULT_ERROR)
+    toast.error(response?.data?.message ?? m.common_default_error({}, { locale: getLocale() }))
   }
 
   const [queryClient] = useState(

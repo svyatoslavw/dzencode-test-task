@@ -48,7 +48,7 @@ const AppSidebar = ({ locale }: AppSidebarProps) => {
       </nav>
 
       <div className="d-flex flex-column gap-3 mt-auto">
-        <UserCard user={user} />
+        <UserCard locale={locale} user={user} />
         <button
           type="button"
           className="btn btn-outline-danger"

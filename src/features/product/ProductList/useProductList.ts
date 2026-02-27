@@ -3,8 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef } from "react"
 
-import type { ProductsListResponse } from "@/shared/api/contracts"
-import { useProductTypesQuery, useProductsQuery } from "@/shared/api/hooks"
+import { useProductTypesQuery, useProductsQuery, type ProductsListResponse } from "@/shared/api"
 
 interface UseProductListProps {
   initialType?: string
@@ -21,7 +20,7 @@ export const useProductList = ({ initialType = "", initialPage }: UseProductList
   const { data: types } = useProductTypesQuery()
   const { data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useProductsQuery({
-      type: type || undefined,
+      type,
       initialPage: type === initialType ? initialPage : undefined
     })
 

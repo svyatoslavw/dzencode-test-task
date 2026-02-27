@@ -1,6 +1,7 @@
 "use client"
 
 import { Locale, setLocale } from "@/shared/i18n/runtime"
+import { m } from "@/shared/i18n/messages"
 
 interface LocalSwitcherProps {
   locale: Locale
@@ -12,7 +13,11 @@ const LocalSwitcher = ({ locale }: LocalSwitcherProps) => {
   }
 
   return (
-    <div className="btn-group btn-group-sm" role="group" aria-label="Language toggle">
+    <div
+      className="btn-group btn-group-sm"
+      role="group"
+      aria-label={m.locale_switch_aria({}, { locale })}
+    >
       <button
         type="button"
         className={`btn btn-outline-secondary ${locale === "ru" ? "active" : ""}`}

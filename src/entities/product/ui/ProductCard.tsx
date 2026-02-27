@@ -1,17 +1,111 @@
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
+import { formatFullDate, formatPrice } from "@/shared/lib"
+import Image from "next/image"
 import type { ProductModel } from "../model"
 
 interface ProductCardProps {
   product: ProductModel
+  locale: Locale
+  setProductIdToDelete: (productId: number | null) => void
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+const getPriceBySymbol = (
+  prices: { value: number; symbol: "USD" | "UAH" }[],
+  symbol: "USD" | "UAH"
+) => prices.find((price) => price.symbol === symbol)?.value
+
+const getOptimizedProductImage = (photo: string): string => {
+  try {
+    const parsed = new URL(photo)
+
+    if (parsed.hostname !== "picsum.photos") {
+      return photo
+    }
+
+    const pathParts = parsed.pathname.split("/").filter(Boolean)
+
+    if (pathParts.length >= 4 && pathParts[0] === "seed") {
+      const seed = pathParts[1]
+      return `https://picsum.photos/seed/${seed}/120/120`
+    }
+  } catch {
+    return photo
+  }
+
+  return photo
+}
+
+export const ProductCard = ({ product, locale, setProductIdToDelete }: ProductCardProps) => {
+  const optimizedPhoto = getOptimizedProductImage(product.photo)
+  const usdPrice = getPriceBySymbol(product.price, "USD")
+  const uahPrice = getPriceBySymbol(product.price, "UAH")
+
   return (
-    <article className="card shadow-sm border-0">
-      <div className="card-body">
-        <h6 className="card-title mb-2">{product.title}</h6>
-        <p className="mb-1">Тип: {product.type}</p>
-        <p className="mb-0 text-body-secondary small">Приход: {product.orderTitle}</p>
-      </div>
-    </article>
+    <tr key={product.id}>
+      <td>
+        <div className="d-flex align-items-center gap-2">
+          <Image
+            src={optimizedPhoto}
+            alt={product.title}
+            width={42}
+            height={42}
+            sizes="(min-width: 768px) 42px, 42px"
+            quality={100}
+            className="rounded border object-fit-cover flex-shrink-0"
+          />
+          <div className="fw-semibold clamp">{product.title}</div>
+        </div>
+      </td>
+      <td>
+        <div className="clamp">{product.type}</div>
+      </td>
+      <td>
+        <span className={`badge ${product.inStock ? "text-bg-success" : "text-bg-secondary"}`}>
+          {product.inStock
+            ? m.products_stock_in({}, { locale })
+            : m.products_stock_out({}, { locale })}
+        </span>
+      </td>
+      <td>
+        <div className="d-flex flex-column text-nowrap">
+          <span className="small text-body-secondary">
+            {formatFullDate(product.guarantee.start, locale)}
+          </span>
+          <span>{formatFullDate(product.guarantee.end, locale)}</span>
+        </div>
+      </td>
+      <td>
+        {product.quality === "new"
+          ? m.products_quality_new({}, { locale })
+          : m.products_quality_used({}, { locale })}
+      </td>
+      <td>
+        <div className="clamp">{product.seller}</div>
+      </td>
+      <td>
+        <div className="clamp">{product.orderTitle}</div>
+      </td>
+      <td className="text-end fw-semibold">
+        <div className="d-flex flex-column text-nowrap">
+          <span className="small text-body-secondary">
+            {usdPrice === undefined ? "—" : formatPrice(usdPrice)} USD
+          </span>
+          <span className="small text-body-secondary">
+            {uahPrice === undefined ? "—" : formatPrice(uahPrice)} UAH
+          </span>
+        </div>
+      </td>
+      <td className="text-end text-nowrap">{formatFullDate(product.date, locale)}</td>
+      <td className="text-end">
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-danger"
+          onClick={() => setProductIdToDelete(product.id)}
+        >
+          {m.common_delete({}, { locale })}
+        </button>
+      </td>
+    </tr>
   )
 }

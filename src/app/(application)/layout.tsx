@@ -1,6 +1,4 @@
-import { cookies } from "next/headers"
-
-import { assertIsLocale } from "@/shared/i18n/runtime"
+import { getServerLocale } from "@/shared/lib/locale"
 import { AppWrapper } from "@/widgets/AppWrapper"
 
 export default async function ApplicationLayout({ children }: { children: React.ReactNode }) {
@@ -10,8 +8,7 @@ export default async function ApplicationLayout({ children }: { children: React.
   //     redirect("/login")
   //   }
 
-  const cookieStore = await cookies()
-  const locale = assertIsLocale(cookieStore.get("PARAGLIDE_LOCALE")?.value)
+  const locale = await getServerLocale()
 
   return <AppWrapper locale={locale}>{children}</AppWrapper>
 }

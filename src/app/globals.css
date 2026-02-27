@@ -43,3 +43,71 @@ body {
   -webkit-line-clamp: 1;
   overflow: hidden;
 }
+
+.app-scroll-table {
+  height: 100%;
+  width: 100%;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-scroll-table thead,
+.app-scroll-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.app-scroll-table thead {
+  flex: 0 0 auto;
+}
+
+.app-scroll-table tbody {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.app-scroll-table tbody {
+  --sb-track-color: #ffffff;
+  --sb-thumb-color: #cbcbcb;
+  --sb-size: 8px;
+}
+
+.app-scroll-table tbody::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+.app-scroll-table tbody::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 4px;
+}
+
+.app-scroll-table tbody::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 4px;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .app-scroll-table tbody {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
+.products-table thead th:nth-child(1),
+.products-table tbody td:nth-child(1) {
+  width: 18%;
+}
+
+.products-table thead th:nth-child(5),
+.products-table tbody td:nth-child(5) {
+  width: 7%;
+}
+
+.products-table thead th:nth-child(10),
+.products-table tbody td:nth-child(10) {
+  width: 7%;
+}

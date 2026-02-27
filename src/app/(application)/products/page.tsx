@@ -1,5 +1,6 @@
 import { getPaginatedProducts } from "@/app/api/database"
 import { PAGE_LIMIT } from "@/shared/api/contracts"
+import { getServerLocale } from "@/shared/lib/locale"
 import { ProductsHeader } from "@/widgets/ProductsHeader/ProductsHeader"
 import { ProductsTable } from "@/widgets/ProductsTable/ProductsTable"
 
@@ -10,6 +11,7 @@ interface ProductsPageProps {
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const locale = await getServerLocale()
   const resolvedSearchParams = await searchParams
   const rawType = Array.isArray(resolvedSearchParams.type)
     ? resolvedSearchParams.type[0]
@@ -22,9 +24,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   })
 
   return (
-    <>
-      <ProductsHeader productsCount={initialPage.pagination.total} />
-      <ProductsTable initialType={type} initialPage={initialPage} />
-    </>
+    <section className="h-100 d-flex flex-column gap-3" style={{ minHeight: 0 }}>
+      <ProductsHeader locale={locale} productsCount={initialPage.pagination.total} />
+      <div className="flex-grow-1" style={{ minHeight: 0 }}>
+        <ProductsTable locale={locale} initialType={type} initialPage={initialPage} />
+      </div>
+    </section>
   )
 }

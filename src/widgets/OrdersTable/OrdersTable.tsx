@@ -6,12 +6,15 @@ import { OrderDetails } from "@/features/order/OrderDetails"
 import { OrderList, useOrderList } from "@/features/order/OrderList"
 import { RemoveOrderModal } from "@/features/order/RemoveOrder"
 import type { OrdersListResponse } from "@/shared/api/contracts"
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
 
 interface OrdersTableProps {
+  locale: Locale
   initialPage: OrdersListResponse
 }
 
-export const OrdersTable = ({ initialPage }: OrdersTableProps) => {
+export const OrdersTable = ({ locale, initialPage }: OrdersTableProps) => {
   const { state, handlers } = useOrderList({ initialPage })
   const {
     containerRef,
@@ -37,36 +40,43 @@ export const OrdersTable = ({ initialPage }: OrdersTableProps) => {
   }
 
   if (isLoading) {
-    return <div className="alert alert-info mb-0">Загрузка приходов...</div>
+    return <div className="alert alert-info mb-0">{m.orders_loading({}, { locale })}</div>
   }
 
   if (isError) {
-    return <div className="alert alert-danger mb-0">Ошибка: {(error as Error).message}</div>
+    return (
+      <div className="alert alert-danger mb-0">
+        {m.common_error_with_message({ message: (error as Error).message }, { locale })}
+      </div>
+    )
   }
 
   return (
-    <>
-      <section className="row g-3">
+    <div className="h-100 d-flex flex-column" style={{ minHeight: 0 }}>
+      <section className="row g-3 flex-grow-1" style={{ minHeight: 0 }}>
         <OrderList
+          locale={locale}
           orders={orders}
           selectedOrderId={selectedOrderId}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          containerRef={containerRef}
           onSelectOrder={setSelectedOrderId}
           setOrderToDelete={setOrderIdToDelete}
         />
-        <OrderDetails selectedOrderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
+        <OrderDetails
+          locale={locale}
+          selectedOrderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
       </section>
 
-      {!isError && hasNextPage && (
-        <div ref={containerRef} className="d-flex justify-content-center mt-3">
-          {isFetchingNextPage && <p className="text-body-secondary">Загрузка...</p>}
-        </div>
-      )}
-
       <RemoveOrderModal
+        locale={locale}
         orderIdToDelete={orderIdToDelete}
         onClose={closeModal}
         onSuccess={handleSuccessDelete}
       />
-    </>
+    </div>
   )
 }

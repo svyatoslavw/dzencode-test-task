@@ -3,10 +3,12 @@
 import Link from "next/link"
 
 import type { AuthMode } from "@/entities/user"
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
 import { FormField } from "@/shared/ui"
 import { useAuthForm } from "./useAuthForm"
 
-export const AuthForm = ({ mode }: { mode: AuthMode }) => {
+export const AuthForm = ({ mode, locale }: { mode: AuthMode; locale: Locale }) => {
   const {
     form: {
       register,
@@ -15,15 +17,25 @@ export const AuthForm = ({ mode }: { mode: AuthMode }) => {
     onSubmit,
     isPending,
     serverError
-  } = useAuthForm({ mode })
+  } = useAuthForm({ mode, locale })
 
   const isRegister = mode === "register"
 
-  const title = isRegister ? "Регистрация" : "Вход"
-  const submitText = isPending ? "Загрузка..." : isRegister ? "Создать аккаунт" : "Войти"
-  const switchText = isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"
+  const title = isRegister
+    ? m.auth_title_register({}, { locale })
+    : m.auth_title_login({}, { locale })
+  const submitText = isPending
+    ? m.auth_submit_loading({}, { locale })
+    : isRegister
+      ? m.auth_submit_register({}, { locale })
+      : m.auth_submit_login({}, { locale })
+  const switchText = isRegister
+    ? m.auth_switch_have_account({}, { locale })
+    : m.auth_switch_no_account({}, { locale })
   const switchHref = isRegister ? "/login" : "/register"
-  const switchLinkText = isRegister ? "Войти" : "Зарегистрироваться"
+  const switchLinkText = isRegister
+    ? m.auth_switch_login({}, { locale })
+    : m.auth_switch_register({}, { locale })
 
   return (
     <div className="card border-0 shadow-sm" style={{ width: "min(100%, 420px)" }}>
@@ -33,16 +45,16 @@ export const AuthForm = ({ mode }: { mode: AuthMode }) => {
         <form onSubmit={onSubmit} className="d-grid gap-3">
           {isRegister && (
             <FormField
-              label="Имя"
+              label={m.auth_field_name({}, { locale })}
               type="text"
-              placeholder="Ваше имя"
+              placeholder={m.auth_placeholder_name({}, { locale })}
               registerProps={register("name")}
               error={errors.name}
             />
           )}
 
           <FormField
-            label="Email"
+            label={m.auth_field_email({}, { locale })}
             type="email"
             placeholder="you@example.com"
             registerProps={register("email")}
@@ -50,7 +62,7 @@ export const AuthForm = ({ mode }: { mode: AuthMode }) => {
           />
 
           <FormField
-            label="Пароль"
+            label={m.auth_field_password({}, { locale })}
             type="password"
             placeholder="******"
             registerProps={register("password")}

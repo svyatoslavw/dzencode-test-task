@@ -1,6 +1,8 @@
 "use client"
 
 import { useRemoveOrderMutation } from "@/shared/api"
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
 import {
   Modal,
   ModalBody,
@@ -11,12 +13,18 @@ import {
 } from "@/shared/ui"
 
 interface RemoveOrderModalProps {
+  locale: Locale
   orderIdToDelete: number | null
   onClose: () => void
   onSuccess: () => void
 }
 
-const RemoveOrderModal = ({ onClose, orderIdToDelete, onSuccess }: RemoveOrderModalProps) => {
+const RemoveOrderModal = ({
+  locale,
+  onClose,
+  orderIdToDelete,
+  onSuccess
+}: RemoveOrderModalProps) => {
   const { mutate, isPending } = useRemoveOrderMutation({
     onSuccess
   })
@@ -36,12 +44,16 @@ const RemoveOrderModal = ({ onClose, orderIdToDelete, onSuccess }: RemoveOrderMo
   return (
     <Modal isOpen={!!orderIdToDelete} onClose={handleCloseModal}>
       <ModalHeader>
-        <ModalTitle>Удаление прихода</ModalTitle>
-        <ModalCloseButton onClick={handleCloseModal} disabled={isPending} />
+        <ModalTitle>{m.orders_delete_modal_title({}, { locale })}</ModalTitle>
+        <ModalCloseButton
+          ariaLabel={m.common_close({}, { locale })}
+          onClick={handleCloseModal}
+          disabled={isPending}
+        />
       </ModalHeader>
 
       <ModalBody>
-        <p className="mb-0">Вы действительно хотите удалить приход?</p>
+        <p className="mb-0">{m.orders_delete_modal_text({}, { locale })}</p>
       </ModalBody>
 
       <ModalFooter>
@@ -51,7 +63,7 @@ const RemoveOrderModal = ({ onClose, orderIdToDelete, onSuccess }: RemoveOrderMo
           onClick={onClose}
           disabled={isPending}
         >
-          Отмена
+          {m.common_cancel({}, { locale })}
         </button>
         <button
           type="button"
@@ -59,7 +71,7 @@ const RemoveOrderModal = ({ onClose, orderIdToDelete, onSuccess }: RemoveOrderMo
           onClick={handleConfirmDelete}
           disabled={isPending || !orderIdToDelete}
         >
-          {isPending ? "Удаление..." : "Удалить"}
+          {isPending ? m.common_deleting({}, { locale }) : m.common_delete({}, { locale })}
         </button>
       </ModalFooter>
     </Modal>

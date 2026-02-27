@@ -5,13 +5,16 @@ import { useState } from "react"
 import { ProductList, useProductList } from "@/features/product/ProductList"
 import { RemoveProductModal } from "@/features/product/RemoveProduct"
 import type { ProductsListResponse } from "@/shared/api/contracts"
+import { m } from "@/shared/i18n/messages"
+import type { Locale } from "@/shared/i18n/runtime"
 
 interface ProductsTableProps {
+  locale: Locale
   initialType?: string
   initialPage: ProductsListResponse
 }
 
-export const ProductsTable = ({ initialType = "", initialPage }: ProductsTableProps) => {
+export const ProductsTable = ({ locale, initialType = "", initialPage }: ProductsTableProps) => {
   const [productIdToDelete, setProductIdToDelete] = useState<number | null>(null)
   const { state, handlers } = useProductList({ initialType, initialPage })
   const {
@@ -30,11 +33,11 @@ export const ProductsTable = ({ initialType = "", initialPage }: ProductsTablePr
   const closeModal = () => setProductIdToDelete(null)
 
   return (
-    <>
+    <div className="h-100 d-flex flex-column" style={{ minHeight: 0 }}>
       <div className="row g-2 align-items-center mb-3">
         <div className="col-auto">
           <label htmlFor="type" className="col-form-label">
-            Фильтр по типу
+            {m.products_filter_label({}, { locale })}
           </label>
         </div>
         <div className="col-12 col-sm-2">
@@ -44,7 +47,7 @@ export const ProductsTable = ({ initialType = "", initialPage }: ProductsTablePr
             value={type}
             onChange={(event) => handleTypeChange(event.target.value)}
           >
-            <option value="">Все типы</option>
+            <option value="">{m.products_filter_all_types({}, { locale })}</option>
             {productTypes.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -54,26 +57,34 @@ export const ProductsTable = ({ initialType = "", initialPage }: ProductsTablePr
         </div>
       </div>
 
-      {isLoading && <div className="alert alert-info mb-0">Загрузка продуктов...</div>}
-      {isError && <div className="alert alert-danger mb-0">Ошибка: {(error as Error).message}</div>}
-
-      {!isLoading && !isError && (
-        <section className="row g-3">
-          <ProductList products={products} setProductIdToDelete={setProductIdToDelete} />
-        </section>
+      {isLoading && (
+        <div className="alert alert-info mb-0">{m.products_loading({}, { locale })}</div>
       )}
-
-      {!isError && hasNextPage && (
-        <div ref={containerRef} className="d-flex justify-content-center mt-3">
-          {isFetchingNextPage && <p className="text-body-secondary">Загрузка...</p>}
+      {isError && (
+        <div className="alert alert-danger mb-0">
+          {m.common_error_with_message({ message: (error as Error).message }, { locale })}
         </div>
       )}
 
+      {!isLoading && !isError && (
+        <section className="row g-3 flex-grow-1" style={{ minHeight: 0 }}>
+          <ProductList
+            locale={locale}
+            products={products}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            containerRef={containerRef}
+            setProductIdToDelete={setProductIdToDelete}
+          />
+        </section>
+      )}
+
       <RemoveProductModal
+        locale={locale}
         productIdToDelete={productIdToDelete}
         onClose={closeModal}
         onSuccess={closeModal}
       />
-    </>
+    </div>
   )
 }
