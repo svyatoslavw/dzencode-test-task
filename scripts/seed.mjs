@@ -173,7 +173,7 @@ const seedDatabase = () => {
         const guaranteeEnd = faker.date.future({ years: 3, refDate: guaranteeStart })
 
         const usdPrice = Number(faker.commerce.price({ min: 60, max: 5000, dec: 2 }))
-        const uahPrice = Number((usdPrice * faker.number.float({ min: 39, max: 43 })).toFixed(2))
+        const uahPrice = usdPrice * 42
         const defaultSymbol = faker.helpers.arrayElement(["USD", "UAH"])
         const inStock = faker.number.int({ min: 1, max: 10 }) <= 8 ? 1 : 0
         const quality = faker.helpers.arrayElement(["new", "used"])

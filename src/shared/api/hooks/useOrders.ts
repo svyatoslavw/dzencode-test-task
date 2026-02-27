@@ -1,31 +1,41 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  type InfiniteData,
+  type UseInfiniteQueryOptions
+} from "@tanstack/react-query"
 
-import type { OrderDetailsModel, OrderModel } from "@/entities/order/model/types"
-import { apiRequest } from "@/shared/api/request"
+import type { OrdersListResponse } from "@/shared/api/contracts"
+import { ordersService } from "@/shared/api/services/orders.service"
 
-interface OrdersResponse {
-  data: OrderModel[]
+interface UseOrdersParams {
+  initialPage?: OrdersListResponse
+  settings?: UseOrdersQueryOptions
 }
 
-interface OrderDetailsResponse {
-  data: OrderDetailsModel
-}
+type UseOrdersQueryOptions = Omit<
+  UseInfiniteQueryOptions<
+    OrdersListResponse,
+    unknown,
+    InfiniteData<OrdersListResponse, number>,
+    ["orders", "list"],
+    number
+  >,
+  "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam" | "initialData"
+>
 
-export const useOrders = () => {
-  return useQuery({
-    queryKey: ["orders"],
-    queryFn: () => apiRequest<OrdersResponse>("/api/orders"),
-    select: (response) => response.data
+export const useOrdersQuery = ({ initialPage, settings }: UseOrdersParams = {}) =>
+  useInfiniteQuery({
+    queryKey: ["orders", "list"],
+    queryFn: ({ pageParam }) => ordersService.getPaginatedOrders(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextPage ?? undefined,
+    initialData: initialPage
+      ? {
+          pages: [initialPage],
+          pageParams: [1]
+        }
+      : undefined,
+    ...settings
   })
-}
-
-export const useOrderDetails = (orderId: number | null) => {
-  return useQuery({
-    queryKey: ["orders", "details", orderId],
-    enabled: orderId !== null,
-    queryFn: () => apiRequest<OrderDetailsResponse>(`/api/orders/${orderId}`),
-    select: (response) => response.data
-  })
-}

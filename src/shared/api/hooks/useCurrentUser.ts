@@ -1,18 +1,20 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, type UseQueryOptions } from "@tanstack/react-query"
 
 import type { UserModel } from "@/entities/user/model/types"
-import { apiRequest } from "@/shared/api/request"
+import { authService, type CurrentUserResponse } from "@/shared/api/services/auth.service"
 
-interface CurrentUserResponse {
-  user: UserModel
-}
+type CurrentUserQueryOptions = Omit<
+  UseQueryOptions<CurrentUserResponse, unknown, UserModel, ["current-user"]>,
+  "queryKey" | "queryFn" | "select"
+>
 
-export const useCurrentUser = () => {
+export const useCurrentUserQuery = (settings?: CurrentUserQueryOptions) => {
   return useQuery({
     queryKey: ["current-user"],
-    queryFn: () => apiRequest<CurrentUserResponse>("/api/auth/me"),
-    select: (response) => response.user
+    queryFn: () => authService.me(),
+    select: (response) => response.user,
+    ...settings
   })
 }

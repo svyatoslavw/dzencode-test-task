@@ -61,6 +61,26 @@ export interface OrderDetails extends OrderEntity {
   products: ProductEntity[]
 }
 
+interface PaginationParams {
+  page: number
+  limit: number
+}
+
+interface ListProductsParams extends PaginationParams {
+  type?: string
+}
+
+interface PaginatedResult<TData> {
+  data: TData[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    hasMore: boolean
+    nextPage: number | null
+  }
+}
+
 interface ProductRow {
   id: number
   serial_number: number
@@ -194,6 +214,37 @@ const initDatabase = (): Database.Database => {
 
 const db = initDatabase()
 
+const normalizePagination = ({ page, limit }: PaginationParams) => {
+  const safePage = Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1
+  const safeLimit = Number.isFinite(limit) ? Math.min(100, Math.max(1, Math.floor(limit))) : 20
+
+  return {
+    page: safePage,
+    limit: safeLimit,
+    offset: (safePage - 1) * safeLimit
+  }
+}
+
+const createPaginationMeta = ({
+  page,
+  limit,
+  total
+}: {
+  page: number
+  limit: number
+  total: number
+}) => {
+  const hasMore = page * limit < total
+
+  return {
+    page,
+    limit,
+    total,
+    hasMore,
+    nextPage: hasMore ? page + 1 : null
+  }
+}
+
 export const toPublicUser = (user: UserRecord): PublicUser => ({
   id: user.id,
   email: user.email,
@@ -253,8 +304,16 @@ export const createUser = (params: {
   return user
 }
 
-export const listOrders = (): OrderEntity[] => {
-  const rows = db
+export const getPaginatedOrders = ({
+  page,
+  limit
+}: PaginationParams): PaginatedResult<OrderEntity> => {
+  const { page: safePage, limit: safeLimit, offset } = normalizePagination({ page, limit })
+
+  const totalRow = db.prepare("SELECT COUNT(*) AS total FROM orders").get() as { total: number }
+  const total = totalRow.total
+
+  const data = db
     .prepare(
       `SELECT
         o.id,
@@ -268,9 +327,10 @@ export const listOrders = (): OrderEntity[] => {
       LEFT JOIN products p ON p.order_id = o.id
       LEFT JOIN product_prices pp ON pp.product_id = p.id
       GROUP BY o.id
-      ORDER BY o.id`
+      ORDER BY o.id
+      LIMIT ? OFFSET ?`
     )
-    .all() as Array<{
+    .all(safeLimit, offset) as Array<{
     id: number
     title: string
     description: string
@@ -280,7 +340,14 @@ export const listOrders = (): OrderEntity[] => {
     totalUAH: number
   }>
 
-  return rows
+  return {
+    data,
+    pagination: createPaginationMeta({
+      page: safePage,
+      limit: safeLimit,
+      total
+    })
+  }
 }
 
 export const getOrderDetails = (orderId: number): OrderDetails | null => {
@@ -361,63 +428,78 @@ export const deleteProductById = (productId: number): boolean => {
   return result.changes > 0
 }
 
-export const listProducts = (type?: string): ProductEntity[] => {
+export const getPaginatedProducts = ({
+  type,
+  page,
+  limit
+}: ListProductsParams): PaginatedResult<ProductEntity> => {
+  const { page: safePage, limit: safeLimit, offset } = normalizePagination({ page, limit })
+
+  const totalRow = type
+    ? (db.prepare("SELECT COUNT(*) AS total FROM products WHERE type = ?").get(type) as {
+        total: number
+      })
+    : (db.prepare("SELECT COUNT(*) AS total FROM products").get() as { total: number })
+  const total = totalRow.total
+
   const productRows = (
     type
       ? db
           .prepare(
             `SELECT
-            p.id,
-            p.serial_number,
-            p.is_new,
-            p.in_stock,
-            p.quality,
-            p.seller,
-            p.photo,
-            p.title,
-            p.type,
-            p.specification,
-            p.guarantee_start,
-            p.guarantee_end,
-            p.order_id,
-            o.title AS order_title,
-            p.date
-          FROM products p
-          JOIN orders o ON o.id = p.order_id
-          WHERE p.type = ?
-          ORDER BY p.id`
+              p.id,
+              p.serial_number,
+              p.is_new,
+              p.in_stock,
+              p.quality,
+              p.seller,
+              p.photo,
+              p.title,
+              p.type,
+              p.specification,
+              p.guarantee_start,
+              p.guarantee_end,
+              p.order_id,
+              o.title AS order_title,
+              p.date
+            FROM products p
+            JOIN orders o ON o.id = p.order_id
+            WHERE p.type = ?
+            ORDER BY p.id
+            LIMIT ? OFFSET ?`
           )
-          .all(type)
+          .all(type, safeLimit, offset)
       : db
           .prepare(
             `SELECT
-            p.id,
-            p.serial_number,
-            p.is_new,
-            p.in_stock,
-            p.quality,
-            p.seller,
-            p.photo,
-            p.title,
-            p.type,
-            p.specification,
-            p.guarantee_start,
-            p.guarantee_end,
-            p.order_id,
-            o.title AS order_title,
-            p.date
-          FROM products p
-          JOIN orders o ON o.id = p.order_id
-          ORDER BY p.id`
+              p.id,
+              p.serial_number,
+              p.is_new,
+              p.in_stock,
+              p.quality,
+              p.seller,
+              p.photo,
+              p.title,
+              p.type,
+              p.specification,
+              p.guarantee_start,
+              p.guarantee_end,
+              p.order_id,
+              o.title AS order_title,
+              p.date
+            FROM products p
+            JOIN orders o ON o.id = p.order_id
+            ORDER BY p.id
+            LIMIT ? OFFSET ?`
           )
-          .all()
+          .all(safeLimit, offset)
   ) as ProductRow[]
 
   const getPrices = db.prepare(
     "SELECT value, symbol, is_default FROM product_prices WHERE product_id = ? ORDER BY is_default DESC, id ASC"
   )
 
-  return productRows.map((row) => {
+  const data = productRows.map((row) => {
     const prices = getPrices.all(row.id) as Array<{
       value: number
       symbol: CurrencySymbol
@@ -426,9 +508,18 @@ export const listProducts = (type?: string): ProductEntity[] => {
 
     return mapProductRow(row, mapPriceRows(prices))
   })
+
+  return {
+    data,
+    pagination: createPaginationMeta({
+      page: safePage,
+      limit: safeLimit,
+      total
+    })
+  }
 }
 
-export const listProductTypes = (): string[] => {
+export const getProductTypes = (): string[] => {
   const rows = db.prepare("SELECT DISTINCT type FROM products ORDER BY type ASC").all() as Array<{
     type: string
   }>

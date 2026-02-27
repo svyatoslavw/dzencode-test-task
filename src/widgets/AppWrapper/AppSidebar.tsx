@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { UserCard } from "@/entities/user"
-import { useCurrentUser, useLogout } from "@/shared/api"
+import { useCurrentUserQuery, useLogoutMutation } from "@/shared/api"
 
 const navItems = [
   { href: "/orders", label: "Приходы" },
@@ -13,8 +13,8 @@ const navItems = [
 
 const AppSidebar = () => {
   const pathname = usePathname()
-  const logout = useLogout()
-  const { data: user } = useCurrentUser()
+  const logout = useLogoutMutation()
+  const { data: user } = useCurrentUserQuery()
 
   return (
     <aside

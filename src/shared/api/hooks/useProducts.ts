@@ -1,33 +1,42 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  type InfiniteData,
+  type UseInfiniteQueryOptions
+} from "@tanstack/react-query"
 
-import type { ProductModel } from "@/entities/product/model/types"
-import { apiRequest } from "@/shared/api/request"
+import type { ProductsListResponse } from "@/shared/api/contracts"
+import { productsService } from "@/shared/api/services/products.service"
 
-interface ProductsResponse {
-  data: ProductModel[]
+interface UseProductsParams {
+  type?: string
+  initialPage?: ProductsListResponse
+  settings?: UseProductsQueryOptions
 }
 
-interface ProductTypesResponse {
-  data: string[]
-}
+type UseProductsQueryOptions = Omit<
+  UseInfiniteQueryOptions<
+    ProductsListResponse,
+    unknown,
+    InfiniteData<ProductsListResponse, number>,
+    ["products", "list", string],
+    number
+  >,
+  "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam" | "initialData"
+>
 
-export const useProducts = (type?: string) => {
-  return useQuery({
-    queryKey: ["products", type ?? "all"],
-    queryFn: () =>
-      apiRequest<ProductsResponse>(
-        `/api/products${type ? `?type=${encodeURIComponent(type)}` : ""}`
-      ),
-    select: (response) => response.data
+export const useProductsQuery = ({ type, initialPage, settings }: UseProductsParams = {}) =>
+  useInfiniteQuery({
+    queryKey: ["products", "list", type ?? "all"],
+    queryFn: ({ pageParam }) => productsService.getPaginatedProducts(pageParam, type),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.pagination.nextPage ?? undefined,
+    initialData: initialPage
+      ? {
+          pages: [initialPage],
+          pageParams: [1]
+        }
+      : undefined,
+    ...settings
   })
-}
-
-export const useProductTypes = () => {
-  return useQuery({
-    queryKey: ["product-types"],
-    queryFn: () => apiRequest<ProductTypesResponse>("/api/products/types"),
-    select: (response) => response.data
-  })
-}

@@ -1,21 +1,22 @@
 "use client"
 
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, type UseMutationOptions } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 
-import { apiRequest } from "@/shared/api/request"
+import { authService } from "@/shared/api/services/auth.service"
 
-export const useLogout = () => {
+type UseLogoutMutationOptions = UseMutationOptions<{ ok: true }, unknown, void, unknown>
+
+export const useLogoutMutation = (settings?: UseLogoutMutationOptions) => {
   const router = useRouter()
 
   return useMutation({
-    mutationFn: () =>
-      apiRequest<{ ok: true }>("/api/auth/logout", {
-        method: "POST"
-      }),
+    mutationKey: ["logout"],
+    mutationFn: () => authService.logout(),
     onSuccess: () => {
       router.push("/login")
       router.refresh()
-    }
+    },
+    ...settings
   })
 }
