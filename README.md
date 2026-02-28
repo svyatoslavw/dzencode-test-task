@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orders & Products
 
-## Getting Started
+Тестовий застосунок для керування приходами та продуктами з авторизацією, статистикою, WebSocket-сесіями та SQLite.
 
-First, run the development server:
+## Стек і чому саме він
+
+- `React 19 + TypeScript`  
+  Фундамент.
+- `Next.js 16 (App Router)`  
+  SSR/route handlers, зручна структура для фіч та API в одному проєкті.
+- `SQLite + better-sqlite3`  
+  Легка локальна БД без окремого сервера, швидко для тестового/демо-сценарію.
+- `TanStack Query`  
+  Кешування, інвалідація та синхронізація списків після мутацій.
+- `React Hook Form + Zod`  
+  Продуктивні форми та єдина схема валідації на клієнті/сервері.
+- `ws + custom server.mjs`  
+  WebSocket для live-показу кількості активних сесій.
+- `Bootstrap 5`  
+  Швидка базова верстка без зайвого boilerplate.
+- `Paraglide (inlang)`  
+  i18n з type-safe ключами повідомлень.
+- `Docker (multi-stage)`  
+  Відтворювана прод-збірка і простий запуск на сервері.
+
+## Вимоги
+
+- `Node.js 22.x`
+- `npm 10+`
+- Для Docker-сценарію: `Docker` + `Docker Compose`
+
+## Локальний запуск
+
+1. Встановити залежності:
+
+```bash
+npm install
+```
+
+2. Запустити застосунок:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Відкрити:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [http://localhost:3000](http://localhost:3000)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Опційно, запуск у production-режимі локально:
 
-## Learn More
+```bash
+npm run build
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Запуск через Docker
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Збірка образу:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run docker:build
+```
 
-## Deploy on Vercel
+Перезбірка без кешу:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run docker:rebuild
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Старт контейнера:
+
+```bash
+npm run docker:up
+```
+
+Зупинка:
+
+```bash
+npm run docker:down
+```
+
+За замовчуванням застосунок доступний на:
+
+- [http://localhost:3000](http://localhost:3000)
+
+Дані БД зберігаються у volume:
+
+- `./data:/app/data`
+
+## Seeder (заповнення БД)
+
+Скрипт:
+
+- `scripts/seed.mjs`
+
+База:
+
+- `data/app.db`
+
+Локально:
+
+```bash
+npm run seed
+```
+
+Більший обсяг даних:
+
+```bash
+npm run seed:big
+```
+
+Кастомні параметри:
+
+```bash
+node scripts/seed.mjs --orders 300 --min-products 3 --max-products 12 --seed 2026
+```
+
+У Docker-контейнері:
+
+```bash
+docker compose exec app npm run seed
+docker compose exec app npm run seed:big
+```
+
+Кастомні параметри в Docker:
+
+```bash
+docker compose exec app node scripts/seed.mjs --orders 300 --min-products 3 --max-products 12 --seed 2026
+```
+
+## Корисні команди
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
