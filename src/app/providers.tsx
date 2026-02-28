@@ -16,8 +16,10 @@ interface Props {
 export const Providers = ({ children }: Props) => {
   const onError = (cause: unknown) => {
     const { response } = cause as AxiosError<BaseResponse>
-    console.log(response)
-    toast.error(response?.data?.message ?? m.common_default_error({}, { locale: getLocale() }))
+    const message = response?.data?.message ?? m.common_default_error({}, { locale: getLocale() })
+    const toastId = response?.status === 401 ? "api-error-401" : `api-error-${message}`
+
+    toast.error(message, { id: toastId })
   }
 
   const [queryClient] = useState(

@@ -1,10 +1,14 @@
 "use client"
 
-import type { ProductModel } from "@/entities/product/model/types"
-import { useOrderDetailsQuery } from "@/shared/api/hooks"
+import { AddProduct } from "@/features/product"
+import { PAGE_LIMIT, type ProductsListResponse } from "@/shared/api/contracts"
+import { useOrderDetailsQuery, useProductsQuery } from "@/shared/api/hooks"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
-import { formatPrice, formatShortDate } from "@/shared/lib"
+import { useEffect, useMemo, useRef } from "react"
+import { OrderDetailsHeader } from "./OrderDetailsHeader"
+import { OrderDetailsProductsTable } from "./OrderDetailsProductsTable"
+import { OrderDetailsStats } from "./OrderDetailsStats"
 
 interface OrderDetailsProps {
   locale: Locale
@@ -12,35 +16,83 @@ interface OrderDetailsProps {
   onClose: () => void
 }
 
-const formatProductPrices = (product: ProductModel): string => {
-  return product.price.map((item) => `${formatPrice(item.value)} ${item.symbol}`).join(" / ")
-}
-
 export const OrderDetails = ({ locale, selectedOrderId, onClose }: OrderDetailsProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const { data, isLoading, isError, error } = useOrderDetailsQuery(selectedOrderId)
+  const initialProductsPage = useMemo<ProductsListResponse | undefined>(() => {
+    if (!data) {
+      return undefined
+    }
+
+    const hasMore = data.productsCount > data.products.length
+
+    return {
+      data: data.products,
+      pagination: {
+        page: 1,
+        limit: PAGE_LIMIT,
+        total: data.productsCount,
+        hasMore,
+        nextPage: hasMore ? 2 : null
+      }
+    }
+  }, [data])
+
+  const {
+    data: productsData,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    error: productsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useProductsQuery({
+    orderId: selectedOrderId ?? undefined,
+    initialPage: initialProductsPage,
+    settings: {
+      enabled: selectedOrderId !== null && Boolean(initialProductsPage)
+    }
+  })
+  const products = useMemo(
+    () => productsData?.pages.flatMap((page) => page.data) ?? [],
+    [productsData]
+  )
+
+  useEffect(() => {
+    if (!selectedOrderId || !containerRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      {
+        root: null,
+        rootMargin: "0px",
+        threshold: 1.0
+      }
+    )
+
+    observer.observe(containerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, selectedOrderId])
 
   if (!selectedOrderId) return null
 
   return (
     <div className="col-12 col-xxl-6">
       <section className="card border-0 shadow-sm max-h-75">
-        <div className="card-body d-flex flex-column gap-2 p-3">
-          <div className="d-flex justify-content-between align-items-start gap-2">
-            <div>
-              <h2 className="h6 mb-1 clamp">
-                {data?.title ?? m.orders_details_title_fallback({}, { locale })}
-              </h2>
-              <p className="mb-0 small text-body-secondary">
-                {data?.description ?? m.orders_details_description_fallback({}, { locale })}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-              aria-label={m.common_close({}, { locale })}
-            />
-          </div>
+        <div className="card-body d-flex flex-column gap-3 p-3">
+          <OrderDetailsHeader
+            locale={locale}
+            title={data?.title}
+            description={data?.description}
+            onClose={onClose}
+          />
 
           {isLoading && (
             <div className="alert alert-info mb-0">{m.orders_details_loading({}, { locale })}</div>
@@ -54,55 +106,40 @@ export const OrderDetails = ({ locale, selectedOrderId, onClose }: OrderDetailsP
 
           {!isLoading && !isError && data && (
             <>
-              <div className="row g-2">
-                <div className="col-12 col-md-6">
-                  <div className="border rounded-3 p-2 h-100 small">
-                    <div className="small text-body-secondary">
-                      {m.orders_details_products({}, { locale })}
-                    </div>
-                    <div className="fw-semibold">{data.productsCount}</div>
-                  </div>
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="border rounded-3 p-2 h-100 small">
-                    <div className="small text-body-secondary">
-                      {m.orders_details_total({}, { locale })}
-                    </div>
-                    <div className="fw-semibold">
-                      {formatPrice(data.totalUSD)} USD / {formatPrice(data.totalUAH)} UAH
-                    </div>
-                  </div>
-                </div>
+              <OrderDetailsStats
+                locale={locale}
+                productsCount={data.productsCount}
+                totalUSD={data.totalUSD}
+                totalUAH={data.totalUAH}
+              />
+
+              <div className="d-flex justify-content-between align-items-center">
+                <h3 className="h6 mb-0">{m.orders_details_column_product({}, { locale })}</h3>
+                <AddProduct locale={locale} orderId={selectedOrderId} />
               </div>
 
-              <div className="table-responsive border rounded-3">
-                <table className="table table-sm align-middle mb-0 small">
-                  <thead className="table-light">
-                    <tr>
-                      <th scope="col">{m.orders_details_column_product({}, { locale })}</th>
-                      <th scope="col">{m.orders_details_column_serial({}, { locale })}</th>
-                      <th scope="col">{m.orders_details_column_guarantee({}, { locale })}</th>
-                      <th scope="col">{m.orders_details_column_prices({}, { locale })}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.products.map((product) => (
-                      <tr key={product.id}>
-                        <td>
-                          <div className="fw-semibold">{product.title}</div>
-                          <div className="small text-body-secondary">{product.type}</div>
-                        </td>
-                        <td>{product.serialNumber}</td>
-                        <td>
-                          {formatShortDate(product.guarantee.start, locale)} -{" "}
-                          {formatShortDate(product.guarantee.end, locale)}
-                        </td>
-                        <td>{formatProductPrices(product)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {isProductsLoading && (
+                <div className="alert alert-info mb-0">{m.products_loading({}, { locale })}</div>
+              )}
+
+              {isProductsError && (
+                <div className="alert alert-danger mb-0">
+                  {m.common_error_with_message(
+                    { message: (productsError as Error).message },
+                    { locale }
+                  )}
+                </div>
+              )}
+
+              {!isProductsLoading && !isProductsError && (
+                <OrderDetailsProductsTable
+                  locale={locale}
+                  products={products}
+                  hasNextPage={Boolean(hasNextPage)}
+                  isFetchingNextPage={isFetchingNextPage}
+                  containerRef={containerRef}
+                />
+              )}
             </>
           )}
         </div>

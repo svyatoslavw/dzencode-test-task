@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { getAuthorizedUser, unauthorizedResponse } from "@/app/api/_lib/require-auth"
-import { getPaginatedOrders } from "@/app/api/database"
+import { createOrder, getPaginatedOrders } from "@/app/api/database"
 import { MAX_PAGE_LIMIT, PAGE_LIMIT } from "@/shared/api/contracts"
+import { createOrderSchema } from "@/shared/api/shemas"
 
 export const runtime = "nodejs"
 
@@ -34,4 +35,29 @@ export async function GET(request: NextRequest) {
   const orders = getPaginatedOrders({ page, limit })
 
   return NextResponse.json(orders)
+}
+
+export async function POST(request: NextRequest) {
+  const user = getAuthorizedUser(request)
+
+  if (!user) {
+    return unauthorizedResponse()
+  }
+
+  const body = await request.json().catch(() => null)
+  const parsedBody = createOrderSchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    return NextResponse.json(
+      {
+        message: "Validation failed",
+        errors: parsedBody.error.flatten()
+      },
+      { status: 400 }
+    )
+  }
+
+  const orderId = createOrder(parsedBody.data)
+
+  return NextResponse.json({ ok: true, id: orderId }, { status: 201 })
 }

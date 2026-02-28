@@ -10,11 +10,11 @@ import type { Locale } from "@/shared/i18n/runtime"
 
 const navItems = [{ href: "/orders" }, { href: "/products" }]
 
-interface AppSidebarProps {
+interface NavigationMenuProps {
   locale: Locale
 }
 
-const AppSidebar = ({ locale }: AppSidebarProps) => {
+const NavigationMenu = ({ locale }: NavigationMenuProps) => {
   const pathname = usePathname()
   const logout = useLogoutMutation()
   const { data: user } = useCurrentUserQuery()
@@ -62,4 +62,4 @@ const AppSidebar = ({ locale }: AppSidebarProps) => {
   )
 }
 
-export { AppSidebar }
+export { NavigationMenu }

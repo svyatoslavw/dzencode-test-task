@@ -2,24 +2,39 @@ import type { ProductModel } from "@/entities/product"
 import { ProductCard } from "@/entities/product"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
+import type { ComponentType } from "react"
 
-interface ProductListProps {
+export interface ProductRowComponentProps {
+  product: ProductModel
+  locale: Locale
+  setProductIdToDelete: (productId: number | null) => void
+}
+
+interface ProductsProps {
   locale: Locale
   products: ProductModel[]
   hasNextPage: boolean
   isFetchingNextPage: boolean
   containerRef: React.RefObject<HTMLDivElement | null>
   setProductIdToDelete: (productId: number | null) => void
+  rowComponent?: ComponentType<ProductRowComponentProps>
+  actionsHeaderLabel?: string
+  emptyLabel?: string
 }
 
-const ProductList = ({
+const Products = ({
   locale,
   products,
   hasNextPage,
   isFetchingNextPage,
   containerRef,
-  setProductIdToDelete
-}: ProductListProps) => {
+  setProductIdToDelete,
+  rowComponent: RowComponent = ProductCard,
+  actionsHeaderLabel,
+  emptyLabel
+}: ProductsProps) => {
+  const columnsCount = 9
+
   return (
     <section className="col-12 h-100" style={{ minHeight: 0 }}>
       <div className="rounded-3 table-responsive border border-secondary border-opacity-25 h-100 d-flex flex-column overflow-hidden">
@@ -39,7 +54,7 @@ const ProductList = ({
                 {m.products_column_date({}, { locale })}
               </th>
               <th className="text-end products-col-actions">
-                {m.products_column_actions({}, { locale })}
+                {actionsHeaderLabel ?? m.products_column_actions({}, { locale })}
               </th>
             </tr>
           </thead>
@@ -47,14 +62,14 @@ const ProductList = ({
           <tbody>
             {products.length === 0 && (
               <tr>
-                <td colSpan={10} className="text-center text-body-secondary py-4">
-                  {m.products_empty({}, { locale })}
+                <td colSpan={columnsCount} className="text-center text-body-secondary py-4">
+                  {emptyLabel ?? m.products_empty({}, { locale })}
                 </td>
               </tr>
             )}
 
             {products.map((product) => (
-              <ProductCard
+              <RowComponent
                 key={product.id}
                 product={product}
                 locale={locale}
@@ -64,7 +79,7 @@ const ProductList = ({
 
             {hasNextPage && (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={columnsCount}>
                   <div ref={containerRef} className="d-flex justify-content-center py-2">
                     {isFetchingNextPage && (
                       <p className="text-body-secondary mb-0">
@@ -82,4 +97,4 @@ const ProductList = ({
   )
 }
 
-export { ProductList }
+export { Products as ProductList }

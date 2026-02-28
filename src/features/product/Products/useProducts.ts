@@ -5,12 +5,12 @@ import { useEffect, useMemo, useRef } from "react"
 
 import { useProductTypesQuery, useProductsQuery, type ProductsListResponse } from "@/shared/api"
 
-interface UseProductListProps {
+interface UseProductsProps {
   initialType?: string
   initialPage: ProductsListResponse
 }
 
-export const useProductList = ({ initialType = "", initialPage }: UseProductListProps) => {
+export const useProducts = ({ initialType = "", initialPage }: UseProductsProps) => {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()

@@ -1,7 +1,9 @@
+"use client"
+
 import { OrdersListResponse, useOrdersQuery } from "@/shared/api"
 import { useEffect, useMemo, useRef, useState } from "react"
 
-export const useOrderList = ({ initialPage }: { initialPage: OrdersListResponse }) => {
+export const useOrders = ({ initialPage }: { initialPage: OrdersListResponse }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
 

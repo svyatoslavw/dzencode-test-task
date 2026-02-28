@@ -1,5 +1,5 @@
 const cfg = {
-  "*.{js,jsx,ts,tsx}": ["npm run lint", "prettier --write", "npm run test"]
+  "*.{js,jsx,ts,tsx}": ["npm run lint", "prettier --write", "vitest run"]
 }
 
 export default cfg

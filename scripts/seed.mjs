@@ -69,7 +69,6 @@ const createTables = () => {
       photo TEXT NOT NULL,
       title TEXT NOT NULL,
       type TEXT NOT NULL,
-      specification TEXT NOT NULL,
       guarantee_start TEXT NOT NULL,
       guarantee_end TEXT NOT NULL,
       order_id INTEGER NOT NULL,
@@ -130,12 +129,11 @@ const seedDatabase = () => {
       photo,
       title,
       type,
-      specification,
       guarantee_start,
       guarantee_end,
       order_id,
       date
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
 
   const insertPrice = db.prepare(
@@ -188,7 +186,6 @@ const seedDatabase = () => {
           faker.image.url(),
           faker.commerce.productName(),
           productType,
-          faker.commerce.productDescription(),
           formatDbDate(guaranteeStart),
           formatDbDate(guaranteeEnd),
           orderId,

@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 
-import { ProductList, useProductList } from "@/features/product/ProductList"
-import { RemoveProductModal } from "@/features/product/RemoveProduct"
+import { ProductList, RemoveProductModal, useProducts } from "@/features/product"
 import type { ProductsListResponse } from "@/shared/api/contracts"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
@@ -16,7 +15,7 @@ interface ProductsTableProps {
 
 export const ProductsTable = ({ locale, initialType = "", initialPage }: ProductsTableProps) => {
   const [productIdToDelete, setProductIdToDelete] = useState<number | null>(null)
-  const { state, handlers } = useProductList({ initialType, initialPage })
+  const { state, handlers } = useProducts({ initialType, initialPage })
   const {
     containerRef,
     products,

@@ -16,7 +16,6 @@ export interface ProductModel {
   photo: string
   title: string
   type: string
-  specification: string
   guarantee: {
     start: string
     end: string

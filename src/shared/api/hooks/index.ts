@@ -1,4 +1,6 @@
 export * from "./useCurrentUser"
+export * from "./useCreateOrder"
+export * from "./useCreateProduct"
 export * from "./useLogout"
 export * from "./useOrderDetails"
 export * from "./useOrders"

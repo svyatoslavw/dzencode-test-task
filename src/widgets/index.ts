@@ -1,4 +1,6 @@
-export * from "./AppWrapper"
+export * from "./NavigationMenu"
+export * from "./OrdersHeader"
 export * from "./OrdersTable"
+export * from "./ProductsHeader"
 export * from "./ProductsTable"
 export * from "./TopMenu"

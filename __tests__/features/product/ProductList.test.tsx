@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import type { ProductModel } from "@/entities/product/model/types"
-import { ProductList } from "@/features/product/ProductList"
+import { ProductList } from "@/features/product/Products"
 import { m } from "@/shared/i18n/messages"
 
 const { cardSpy } = vi.hoisted(() => ({
@@ -31,7 +31,6 @@ const createProduct = (id: number): ProductModel => ({
   photo: "https://picsum.photos/seed/test/400/300",
   title: `Product ${id}`,
   type: "Laptop",
-  specification: "Spec",
   guarantee: {
     start: "2024-01-01 00:00:00",
     end: "2025-01-01 00:00:00"

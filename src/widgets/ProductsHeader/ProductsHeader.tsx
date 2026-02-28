@@ -8,7 +8,7 @@ interface ProductsHeaderProps {
 
 const ProductsHeader = ({ locale, productsCount = 0 }: ProductsHeaderProps) => {
   return (
-    <div className="d-flex justify-content-between align-items-center">
+    <div className="d-flex align-items-center">
       <h1 className="fw-semibold">
         {m.products_header_title({ count: productsCount }, { locale })}
       </h1>

@@ -3,7 +3,7 @@ import type { OrderModel } from "@/entities/order/model/types"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
 
-interface OrderListProps {
+interface OrdersProps {
   locale: Locale
   orders: OrderModel[]
   selectedOrderId: number | null
@@ -14,7 +14,7 @@ interface OrderListProps {
   setOrderToDelete: (orderId: number | null) => void
 }
 
-const OrderList = ({
+const Orders = ({
   locale,
   orders,
   selectedOrderId,
@@ -23,7 +23,7 @@ const OrderList = ({
   containerRef,
   onSelectOrder,
   setOrderToDelete
-}: OrderListProps) => {
+}: OrdersProps) => {
   return (
     <section
       className={selectedOrderId ? "col-12 col-xxl-6 h-100" : "col-12  h-100"}
@@ -84,4 +84,4 @@ const OrderList = ({
   )
 }
 
-export { OrderList }
+export { Orders as OrderList }

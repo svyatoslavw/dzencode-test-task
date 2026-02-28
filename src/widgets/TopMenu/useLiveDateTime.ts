@@ -19,9 +19,7 @@ export const useLiveDateTime = (locale: string) => {
   const [currentDateTime, setCurrentDateTime] = useState(() => formatDateTime(new Date(), locale))
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(formatDateTime(new Date(), locale))
-    }, 1000)
+    const timer = setInterval(() => setCurrentDateTime(formatDateTime(new Date(), locale)), 1000)
 
     return () => clearInterval(timer)
   }, [locale])

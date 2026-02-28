@@ -2,9 +2,7 @@
 
 import { useState } from "react"
 
-import { OrderDetails } from "@/features/order/OrderDetails"
-import { OrderList, useOrderList } from "@/features/order/OrderList"
-import { RemoveOrderModal } from "@/features/order/RemoveOrder"
+import { OrderDetails, OrderList, RemoveOrderModal, useOrders } from "@/features/order"
 import type { OrdersListResponse } from "@/shared/api/contracts"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
@@ -15,7 +13,7 @@ interface OrdersTableProps {
 }
 
 export const OrdersTable = ({ locale, initialPage }: OrdersTableProps) => {
-  const { state, handlers } = useOrderList({ initialPage })
+  const { state, handlers } = useOrders({ initialPage })
   const {
     containerRef,
     orders,

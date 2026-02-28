@@ -2,8 +2,8 @@ import { act, renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { OrderModel } from "@/entities/order/model/types"
+import { useOrders } from "@/features/order/Orders/useOrders"
 import type { OrdersListResponse } from "@/shared/api/contracts"
-import { useOrderList } from "@/features/order/OrderList/useOrderList"
 
 const useOrdersQueryMock = vi.fn()
 
@@ -52,7 +52,7 @@ describe("useOrderList", () => {
   })
 
   it("resets selected order id when selected order is no longer present", () => {
-    const { result, rerender } = renderHook(() => useOrderList({ initialPage }))
+    const { result, rerender } = renderHook(() => useOrders({ initialPage }))
 
     act(() => {
       result.current.handlers.setSelectedOrderId(1)

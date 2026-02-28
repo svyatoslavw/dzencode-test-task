@@ -2,6 +2,7 @@ import type { OrderDetailsModel } from "@/entities/order/model/types"
 
 import { PAGE_LIMIT, type OrdersListResponse } from "@/shared/api/contracts"
 import { apiRequest } from "@/shared/api/request"
+import type { CreateOrderInput } from "@/shared/api/shemas"
 
 export interface OrderDetailsResponse {
   data: OrderDetailsModel
@@ -23,6 +24,13 @@ class OrdersService {
   removeOrder(orderId: number) {
     return apiRequest<{ ok: true }>(`/api/orders/${orderId}`, {
       method: "DELETE"
+    })
+  }
+
+  createOrder(payload: CreateOrderInput) {
+    return apiRequest<{ ok: true; id: number }>("/api/orders", {
+      method: "POST",
+      data: payload
     })
   }
 }

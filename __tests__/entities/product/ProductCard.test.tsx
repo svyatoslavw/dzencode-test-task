@@ -18,7 +18,6 @@ const createProduct = (overrides: Partial<ProductModel> = {}): ProductModel => (
   photo: "https://picsum.photos/seed/test/400/300",
   title: "MacBook Pro",
   type: "Laptop",
-  specification: "Spec",
   guarantee: {
     start: "2024-01-01 00:00:00",
     end: "2025-01-01 00:00:00"

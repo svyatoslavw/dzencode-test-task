@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { useProducts } from "@/features/product/Products/useProducts"
 import type { ProductsListResponse } from "@/shared/api/contracts"
-import { useProductList } from "@/features/product/ProductList/useProductList"
 
 const replaceMock = vi.fn()
 const usePathnameMock = vi.fn()
@@ -68,7 +68,7 @@ describe("useProductList", () => {
 
   it("adds type query param on type change", () => {
     queryString = "page=1"
-    const { result } = renderHook(() => useProductList({ initialType: "", initialPage }))
+    const { result } = renderHook(() => useProducts({ initialType: "", initialPage }))
 
     act(() => {
       result.current.handlers.handleTypeChange("Laptop")
@@ -79,7 +79,7 @@ describe("useProductList", () => {
 
   it("removes type query param on empty type", () => {
     queryString = "page=1&type=Laptop"
-    const { result } = renderHook(() => useProductList({ initialType: "", initialPage }))
+    const { result } = renderHook(() => useProducts({ initialType: "", initialPage }))
 
     act(() => {
       result.current.handlers.handleTypeChange("")
@@ -90,7 +90,7 @@ describe("useProductList", () => {
 
   it("passes initial page only when active type equals initial type", () => {
     queryString = ""
-    renderHook(() => useProductList({ initialType: "", initialPage }))
+    renderHook(() => useProducts({ initialType: "", initialPage }))
 
     expect(useProductsQueryMock).toHaveBeenLastCalledWith({
       type: "",
@@ -98,7 +98,7 @@ describe("useProductList", () => {
     })
 
     queryString = "type=Monitors"
-    renderHook(() => useProductList({ initialType: "", initialPage }))
+    renderHook(() => useProducts({ initialType: "", initialPage }))
 
     expect(useProductsQueryMock).toHaveBeenLastCalledWith({
       type: "Monitors",

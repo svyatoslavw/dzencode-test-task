@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import type { OrderModel } from "@/entities/order/model/types"
-import { OrderList } from "@/features/order/OrderList"
+import { OrderList } from "@/features/order/Orders"
 import { m } from "@/shared/i18n/messages"
 
 const { cardSpy } = vi.hoisted(() => ({ cardSpy: vi.fn() }))

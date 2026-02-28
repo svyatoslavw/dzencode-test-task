@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+
+data
+__tests__
+task
+
+*.log
+tsconfig.tsbuildinfo
+.DS_Store

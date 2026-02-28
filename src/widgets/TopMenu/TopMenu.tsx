@@ -2,7 +2,8 @@
 import { LocalSwitcher } from "@/features/locale"
 import { m } from "@/shared/i18n/messages"
 import { Locale } from "@/shared/i18n/runtime"
-import { useLiveDateTime } from "../AppWrapper/useLiveDateTime"
+import { useActiveSessions } from "./useActiveSessions"
+import { useLiveDateTime } from "./useLiveDateTime"
 
 interface TopMenuProps {
   locale: Locale
@@ -10,6 +11,7 @@ interface TopMenuProps {
 
 const TopMenu = ({ locale }: TopMenuProps) => {
   const currentDateTime = useLiveDateTime(locale)
+  const sessions = useActiveSessions()
 
   return (
     <header
@@ -27,7 +29,7 @@ const TopMenu = ({ locale }: TopMenuProps) => {
           {currentDateTime}
         </span>
         <span className="badge rounded-pill text-bg-primary">
-          {m.header_active_users({}, { locale })}
+          {m.header_active_users({ count: sessions }, { locale })}
         </span>
       </div>
     </header>

@@ -2,6 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 import Database from "better-sqlite3"
+import { PAGE_LIMIT } from "@/shared/api/contracts"
 
 export type CurrencySymbol = "USD" | "UAH"
 
@@ -36,7 +37,6 @@ export interface ProductEntity {
   photo: string
   title: string
   type: string
-  specification: string
   guarantee: {
     start: string
     end: string
@@ -68,6 +68,28 @@ interface PaginationParams {
 
 interface ListProductsParams extends PaginationParams {
   type?: string
+  orderId?: number
+}
+
+interface CreateOrderParams {
+  title: string
+  description: string
+  date: string
+}
+
+interface CreateProductParams {
+  imageUrl: string
+  title: string
+  type: string
+  quality: "new" | "used"
+  stock: boolean
+  guaranteeStart: string
+  guaranteeEnd: string
+  seller: string
+  date: string
+  price: number
+  currency: CurrencySymbol
+  orderId: number
 }
 
 interface PaginatedResult<TData> {
@@ -91,7 +113,6 @@ interface ProductRow {
   photo: string
   title: string
   type: string
-  specification: string
   guarantee_start: string
   guarantee_end: string
   order_id: number
@@ -101,6 +122,8 @@ interface ProductRow {
 
 const DB_DIR = path.join(process.cwd(), "data")
 const DB_PATH = path.join(DB_DIR, "app.db")
+
+const formatDateInput = (date: string): string => `${date} 00:00:00`
 
 let database: Database.Database | null = null
 
@@ -138,7 +161,6 @@ const mapProductRow = (row: ProductRow, prices: ProductPrice[]): ProductEntity =
   photo: row.photo,
   title: row.title,
   type: row.type,
-  specification: row.specification,
   guarantee: {
     start: row.guarantee_start,
     end: row.guarantee_end
@@ -176,7 +198,6 @@ const createTables = (db: Database.Database): void => {
       photo TEXT NOT NULL,
       title TEXT NOT NULL,
       type TEXT NOT NULL,
-      specification TEXT NOT NULL,
       guarantee_start TEXT NOT NULL,
       guarantee_end TEXT NOT NULL,
       order_id INTEGER NOT NULL,
@@ -222,6 +243,26 @@ const normalizePagination = ({ page, limit }: PaginationParams) => {
     page: safePage,
     limit: safeLimit,
     offset: (safePage - 1) * safeLimit
+  }
+}
+
+const buildProductsWhere = ({ type, orderId }: { type?: string; orderId?: number }) => {
+  const conditions: string[] = []
+  const params: Array<string | number> = []
+
+  if (type) {
+    conditions.push("p.type = ?")
+    params.push(type)
+  }
+
+  if (orderId) {
+    conditions.push("p.order_id = ?")
+    params.push(orderId)
+  }
+
+  return {
+    whereClause: conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "",
+    params
   }
 }
 
@@ -327,7 +368,7 @@ export const getPaginatedOrders = ({
       LEFT JOIN products p ON p.order_id = o.id
       LEFT JOIN product_prices pp ON pp.product_id = p.id
       GROUP BY o.id
-      ORDER BY o.id
+      ORDER BY o.date DESC, o.id DESC
       LIMIT ? OFFSET ?`
     )
     .all(safeLimit, offset) as Array<{
@@ -385,7 +426,6 @@ export const getOrderDetails = (orderId: number): OrderDetails | null => {
         p.photo,
         p.title,
         p.type,
-        p.specification,
         p.guarantee_start,
         p.guarantee_end,
         p.order_id,
@@ -394,9 +434,10 @@ export const getOrderDetails = (orderId: number): OrderDetails | null => {
       FROM products p
       JOIN orders o ON o.id = p.order_id
       WHERE p.order_id = ?
-      ORDER BY p.id`
+      ORDER BY p.date DESC, p.id DESC
+      LIMIT ?`
     )
-    .all(orderId) as ProductRow[]
+    .all(orderId, PAGE_LIMIT) as ProductRow[]
 
   const getPrices = db.prepare(
     "SELECT value, symbol, is_default FROM product_prices WHERE product_id = ? ORDER BY is_default DESC, id ASC"
@@ -418,6 +459,109 @@ export const getOrderDetails = (orderId: number): OrderDetails | null => {
   }
 }
 
+export const orderExistsById = (orderId: number): boolean => {
+  const row = db.prepare("SELECT id FROM orders WHERE id = ?").get(orderId) as
+    | { id: number }
+    | undefined
+
+  return Boolean(row)
+}
+
+export const createOrder = ({ title, description, date }: CreateOrderParams): number => {
+  const nextIdRow = db.prepare("SELECT COALESCE(MAX(id), 0) + 1 AS id FROM orders").get() as {
+    id: number
+  }
+
+  db.prepare("INSERT INTO orders(id, title, date, description) VALUES (?, ?, ?, ?)").run(
+    nextIdRow.id,
+    title,
+    formatDateInput(date),
+    description
+  )
+
+  return nextIdRow.id
+}
+
+export const createProduct = ({
+  imageUrl,
+  title,
+  type,
+  quality,
+  stock,
+  guaranteeStart,
+  guaranteeEnd,
+  seller,
+  date,
+  price,
+  currency,
+  orderId
+}: CreateProductParams): number | null => {
+  const targetOrderId = orderExistsById(orderId) ? orderId : null
+
+  if (!targetOrderId) {
+    return null
+  }
+
+  const nextIdRow = db.prepare("SELECT COALESCE(MAX(id), 0) + 1 AS id FROM products").get() as {
+    id: number
+  }
+  const productId = nextIdRow.id
+  const serialNumber = Number(`${Date.now()}${productId}`.slice(-7))
+  const normalizedSeller = seller.trim() || "Unknown seller"
+  const normalizedPrice = Number(price.toFixed(2))
+  const normalizedPriceUSD = Number(
+    (currency === "USD" ? normalizedPrice : normalizedPrice / 42).toFixed(2)
+  )
+  const normalizedPriceUAH = Number(
+    (currency === "UAH" ? normalizedPrice : normalizedPrice * 42).toFixed(2)
+  )
+
+  const insertTx = db.transaction(() => {
+    db.prepare(
+      `INSERT INTO products(
+        id,
+        serial_number,
+        is_new,
+        in_stock,
+        quality,
+        seller,
+        photo,
+        title,
+        type,
+        guarantee_start,
+        guarantee_end,
+        order_id,
+        date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      productId,
+      serialNumber,
+      quality === "new" ? 1 : 0,
+      stock ? 1 : 0,
+      quality,
+      normalizedSeller,
+      imageUrl,
+      title,
+      type,
+      formatDateInput(guaranteeStart),
+      formatDateInput(guaranteeEnd),
+      targetOrderId,
+      formatDateInput(date)
+    )
+
+    const insertPrice = db.prepare(
+      "INSERT INTO product_prices(product_id, value, symbol, is_default) VALUES (?, ?, ?, ?)"
+    )
+
+    insertPrice.run(productId, normalizedPriceUSD, "USD", 1)
+    insertPrice.run(productId, normalizedPriceUAH, "UAH", 0)
+  })
+
+  insertTx()
+
+  return productId
+}
+
 export const deleteOrderById = (orderId: number): boolean => {
   const result = db.prepare("DELETE FROM orders WHERE id = ?").run(orderId)
   return result.changes > 0
@@ -430,70 +574,43 @@ export const deleteProductById = (productId: number): boolean => {
 
 export const getPaginatedProducts = ({
   type,
+  orderId,
   page,
   limit
 }: ListProductsParams): PaginatedResult<ProductEntity> => {
   const { page: safePage, limit: safeLimit, offset } = normalizePagination({ page, limit })
-
-  const totalRow = type
-    ? (db.prepare("SELECT COUNT(*) AS total FROM products WHERE type = ?").get(type) as {
-        total: number
-      })
-    : (db.prepare("SELECT COUNT(*) AS total FROM products").get() as { total: number })
+  const { whereClause, params } = buildProductsWhere({ type, orderId })
+  const totalRow = db
+    .prepare(`SELECT COUNT(*) AS total FROM products p ${whereClause}`)
+    .get(...params) as {
+    total: number
+  }
   const total = totalRow.total
 
-  const productRows = (
-    type
-      ? db
-          .prepare(
-            `SELECT
-              p.id,
-              p.serial_number,
-              p.is_new,
-              p.in_stock,
-              p.quality,
-              p.seller,
-              p.photo,
-              p.title,
-              p.type,
-              p.specification,
-              p.guarantee_start,
-              p.guarantee_end,
-              p.order_id,
-              o.title AS order_title,
-              p.date
-            FROM products p
-            JOIN orders o ON o.id = p.order_id
-            WHERE p.type = ?
-            ORDER BY p.id
-            LIMIT ? OFFSET ?`
-          )
-          .all(type, safeLimit, offset)
-      : db
-          .prepare(
-            `SELECT
-              p.id,
-              p.serial_number,
-              p.is_new,
-              p.in_stock,
-              p.quality,
-              p.seller,
-              p.photo,
-              p.title,
-              p.type,
-              p.specification,
-              p.guarantee_start,
-              p.guarantee_end,
-              p.order_id,
-              o.title AS order_title,
-              p.date
-            FROM products p
-            JOIN orders o ON o.id = p.order_id
-            ORDER BY p.id
-            LIMIT ? OFFSET ?`
-          )
-          .all(safeLimit, offset)
-  ) as ProductRow[]
+  const productRows = db
+    .prepare(
+      `SELECT
+        p.id,
+        p.serial_number,
+        p.is_new,
+        p.in_stock,
+        p.quality,
+        p.seller,
+        p.photo,
+        p.title,
+        p.type,
+        p.guarantee_start,
+        p.guarantee_end,
+        p.order_id,
+        o.title AS order_title,
+        p.date
+      FROM products p
+      JOIN orders o ON o.id = p.order_id
+      ${whereClause}
+      ORDER BY p.date DESC, p.id DESC
+      LIMIT ? OFFSET ?`
+    )
+    .all(...params, safeLimit, offset) as ProductRow[]
 
   const getPrices = db.prepare(
     "SELECT value, symbol, is_default FROM product_prices WHERE product_id = ? ORDER BY is_default DESC, id ASC"
