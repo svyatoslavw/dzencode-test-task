@@ -61,6 +61,21 @@ export interface OrderDetails extends OrderEntity {
   products: ProductEntity[]
 }
 
+export interface OrdersTrendPoint {
+  date: string
+  count: number
+}
+
+export interface ProductTypeDistributionPoint {
+  type: string
+  count: number
+}
+
+export interface SellerActivityPoint {
+  seller: string
+  count: number
+}
+
 interface PaginationParams {
   page: number
   limit: number
@@ -642,4 +657,53 @@ export const getProductTypes = (): string[] => {
   }>
 
   return rows.map((row) => row.type)
+}
+
+export const getOrdersTrend = (limit = 14): OrdersTrendPoint[] => {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 14
+  const rows = db
+    .prepare(
+      `SELECT
+        substr(o.date, 1, 10) AS date,
+        COUNT(*) AS count
+      FROM orders o
+      GROUP BY substr(o.date, 1, 10)
+      ORDER BY date DESC
+      LIMIT ?`
+    )
+    .all(safeLimit) as OrdersTrendPoint[]
+
+  return rows.reverse()
+}
+
+export const getProductTypeDistribution = (limit = 8): ProductTypeDistributionPoint[] => {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 8
+
+  return db
+    .prepare(
+      `SELECT
+        p.type AS type,
+        COUNT(*) AS count
+      FROM products p
+      GROUP BY p.type
+      ORDER BY count DESC, type ASC
+      LIMIT ?`
+    )
+    .all(safeLimit) as ProductTypeDistributionPoint[]
+}
+
+export const getSellerActivity = (limit = 12): SellerActivityPoint[] => {
+  const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.floor(limit)) : 12
+
+  return db
+    .prepare(
+      `SELECT
+        p.seller AS seller,
+        COUNT(*) AS count
+      FROM products p
+      GROUP BY p.seller
+      ORDER BY count DESC, seller ASC
+      LIMIT ?`
+    )
+    .all(safeLimit) as SellerActivityPoint[]
 }

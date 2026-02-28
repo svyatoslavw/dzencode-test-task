@@ -8,7 +8,11 @@ import { useCurrentUserQuery, useLogoutMutation } from "@/shared/api"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
 
-const navItems = [{ href: "/orders" }, { href: "/products" }]
+const navItems = [
+  { href: "/orders", label: "orders" },
+  { href: "/products", label: "products" },
+  { href: "/statistics", label: "statistics" }
+] as const
 
 interface NavigationMenuProps {
   locale: Locale
@@ -39,9 +43,11 @@ const NavigationMenu = ({ locale }: NavigationMenuProps) => {
               href={item.href}
               className={`nav-link ${isActive ? "active" : "link-body-emphasis"}`}
             >
-              {item.href === "/orders"
+              {item.label === "orders"
                 ? m.nav_orders({}, { locale })
-                : m.nav_products({}, { locale })}
+                : item.label === "products"
+                  ? m.nav_products({}, { locale })
+                  : m.nav_statistics({}, { locale })}
             </Link>
           )
         })}

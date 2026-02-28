@@ -53,3 +53,5 @@ export const formatFullDate = (value: string, locale: "ru" | "en" = "ru"): strin
     locale
   )
 }
+
+export const getToday = () => new Date().toISOString().slice(0, 10)

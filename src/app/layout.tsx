@@ -50,7 +50,7 @@ export default async function RootLayout({
 
   return (
     <html lang={getLocale()} dir={getTextDirection()}>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} `}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -4,6 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { OrderDetails } from "@/features/order/OrderDetails/OrderDetails"
 import { useOrderDetailsQuery, useProductsQuery } from "@/shared/api/hooks"
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn()
+  })
+}))
+
 vi.mock("@/shared/api/hooks", () => ({
   useOrderDetailsQuery: vi.fn(),
   useProductsQuery: vi.fn()

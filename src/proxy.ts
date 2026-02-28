@@ -4,7 +4,7 @@ import { paraglideMiddleware } from "@/shared/i18n/server"
 import { AUTH_COOKIE_NAME, verifyAuthToken } from "@/shared/lib/auth"
 
 const PUBLIC_ROUTES = new Set(["/login", "/register"])
-const PROTECTED_ROUTES = ["/orders", "/products"]
+const PROTECTED_ROUTES = ["/orders", "/products", "/statistics"]
 
 const isProtectedRoute = (pathname: string) =>
   PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
@@ -13,11 +13,6 @@ const isPublicRoute = (pathname: string) => PUBLIC_ROUTES.has(pathname)
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) {
-    return NextResponse.next()
-  }
-
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value
   const hasValidToken = Boolean(token && verifyAuthToken(token))
 

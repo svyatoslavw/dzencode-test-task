@@ -9,8 +9,8 @@ import { getErrorMessage, useCreateProductMutation } from "@/shared/api"
 import { createProductSchema, PRODUCT_TYPES, type CreateProductInput } from "@/shared/api/shemas"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
-
-const getToday = () => new Date().toISOString().slice(0, 10)
+import { getToday } from "@/shared/lib"
+import { useRouter } from "next/navigation"
 
 const addOneYear = (date: string) => {
   const parsed = new Date(date)
@@ -39,6 +39,7 @@ const createInitialValues = (orderId: number): CreateProductInput => {
 
 export const useAddProduct = ({ locale, orderId }: { locale: Locale; orderId: number }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
 
   const form = useForm<CreateProductInput>({
     resolver: zodResolver(createProductSchema),
@@ -50,6 +51,7 @@ export const useAddProduct = ({ locale, orderId }: { locale: Locale; orderId: nu
       toast.success(m.product_add_success({}, { locale }))
       setIsOpen(false)
       form.reset(createInitialValues(orderId))
+      router.refresh()
     },
     onError: (error) => {
       toast.error(getErrorMessage(error) || m.product_add_error({}, { locale }))

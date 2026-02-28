@@ -9,11 +9,10 @@ import { getErrorMessage, useCreateOrderMutation } from "@/shared/api"
 import { createOrderSchema, type CreateOrderInput } from "@/shared/api/shemas"
 import { m } from "@/shared/i18n/messages"
 import type { Locale } from "@/shared/i18n/runtime"
+import { getToday } from "@/shared/lib"
+import { useRouter } from "next/navigation"
 
-export type AddOrderFormValues = CreateOrderInput
-const getToday = () => new Date().toISOString().slice(0, 10)
-
-const createInitialValues = (): AddOrderFormValues => ({
+const createInitialValues = (): CreateOrderInput => ({
   title: "",
   description: "",
   date: getToday()
@@ -21,17 +20,19 @@ const createInitialValues = (): AddOrderFormValues => ({
 
 export const useAddOrder = ({ locale }: { locale: Locale }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
 
-  const form = useForm<AddOrderFormValues>({
+  const form = useForm<CreateOrderInput>({
     resolver: zodResolver(createOrderSchema),
     defaultValues: createInitialValues()
   })
 
-  const mutation = useCreateOrderMutation({
+  const { mutate, isPending } = useCreateOrderMutation({
     onSuccess: () => {
       toast.success(m.order_add_success({}, { locale }))
       setIsOpen(false)
       form.reset(createInitialValues())
+      router.refresh()
     },
     onError: (error) => {
       toast.error(getErrorMessage(error) || m.order_add_error({}, { locale }))
@@ -43,23 +44,19 @@ export const useAddOrder = ({ locale }: { locale: Locale }) => {
   }
 
   const handleClose = () => {
-    if (mutation.isPending) {
-      return
-    }
+    if (isPending) return
 
     setIsOpen(false)
     form.reset(createInitialValues())
   }
 
-  const onSubmit = form.handleSubmit((values) => {
-    mutation.mutate(values)
-  })
+  const onSubmit = form.handleSubmit((values) => mutate(values))
 
   return {
     form,
     onSubmit,
     isOpen,
-    isPending: mutation.isPending,
+    isPending,
     handleOpen,
     handleClose
   }

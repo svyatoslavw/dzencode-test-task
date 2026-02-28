@@ -14,13 +14,19 @@ type UseCreateOrderMutationOptions = UseMutationOptions<
 
 export const useCreateOrderMutation = (settings?: UseCreateOrderMutationOptions) => {
   const queryClient = useQueryClient()
+  const { onSuccess, ...restSettings } = settings ?? {}
 
   return useMutation({
     mutationKey: ["order-create"],
     mutationFn: (payload: CreateOrderInput) => ordersService.createOrder(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] })
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["orders", "list"] }),
+        queryClient.invalidateQueries({ queryKey: ["orders", "details"] })
+      ])
+
+      onSuccess?.(data, variables, onMutateResult, context)
     },
-    ...settings
+    ...restSettings
   })
 }

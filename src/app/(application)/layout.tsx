@@ -1,16 +1,12 @@
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-
-import { AUTH_COOKIE_NAME, verifyAuthToken } from "@/shared/lib/auth"
 import { getServerLocale } from "@/shared/lib/locale"
 import { NavigationMenu, TopMenu } from "@/widgets"
 
 export default async function ApplicationLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value
-  const isAuthorized = Boolean(token && verifyAuthToken(token))
+  // const cookieStore = await cookies()
+  // const token = cookieStore.get(AUTH_COOKIE_NAME)?.value
+  // const isAuthorized = Boolean(token && verifyAuthToken(token))
 
-  if (!isAuthorized) redirect("/login")
+  // if (!isAuthorized) redirect("/login")
 
   const locale = await getServerLocale()
 
@@ -22,7 +18,7 @@ export default async function ApplicationLayout({ children }: { children: React.
       <TopMenu locale={locale} />
       <NavigationMenu locale={locale} />
       <main
-        className="p-3 p-md-4 d-flex flex-column overflow-hidden"
+        className="p-3 p-md-4 d-flex flex-column overflow-y-auto"
         style={{
           marginTop: "var(--app-header-height)",
           marginLeft: "var(--app-sidebar-width)",

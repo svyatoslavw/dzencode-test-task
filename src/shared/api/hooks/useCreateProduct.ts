@@ -14,15 +14,20 @@ type UseCreateProductMutationOptions = UseMutationOptions<
 
 export const useCreateProductMutation = (settings?: UseCreateProductMutationOptions) => {
   const queryClient = useQueryClient()
+  const { onSuccess, ...restSettings } = settings ?? {}
 
   return useMutation({
     mutationKey: ["product-create"],
     mutationFn: (payload: CreateProductInput) => productsService.createProduct(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] })
-      queryClient.invalidateQueries({ queryKey: ["orders"] })
-      queryClient.invalidateQueries({ queryKey: ["product-types"] })
+    onSuccess: async (data, variables, onMutateResult, context) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["products"] }),
+        queryClient.invalidateQueries({ queryKey: ["orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["product-types"] })
+      ])
+
+      onSuccess?.(data, variables, onMutateResult, context)
     },
-    ...settings
+    ...restSettings
   })
 }

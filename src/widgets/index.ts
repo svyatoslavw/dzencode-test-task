@@ -1,3 +1,5 @@
+export * from "./ChartsPanel"
+export * from "./MapsPanel"
 export * from "./NavigationMenu"
 export * from "./OrdersHeader"
 export * from "./OrdersTable"
