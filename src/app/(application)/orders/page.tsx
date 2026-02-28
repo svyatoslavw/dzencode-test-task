@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { getPaginatedOrders } from "@/app/api/database"
 import { PAGE_LIMIT } from "@/shared/api/contracts"
 import { getServerLocale } from "@/shared/lib/locale"
@@ -5,6 +6,9 @@ import { OrdersHeader } from "@/widgets/OrdersHeader/OrdersHeader"
 import { OrdersTable } from "@/widgets/OrdersTable/OrdersTable"
 
 export const dynamic = "force-dynamic"
+export const metadata: Metadata = {
+  title: "Orders"
+}
 
 export default async function OrdersPage() {
   const locale = await getServerLocale()

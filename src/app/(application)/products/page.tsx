@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { getPaginatedProducts } from "@/app/api/database"
 import { PAGE_LIMIT } from "@/shared/api/contracts"
 import { getServerLocale } from "@/shared/lib/locale"
@@ -5,6 +6,9 @@ import { ProductsHeader } from "@/widgets/ProductsHeader/ProductsHeader"
 import { ProductsTable } from "@/widgets/ProductsTable/ProductsTable"
 
 export const dynamic = "force-dynamic"
+export const metadata: Metadata = {
+  title: "Products"
+}
 
 interface ProductsPageProps {
   searchParams: Promise<{ type?: string | string[] }>

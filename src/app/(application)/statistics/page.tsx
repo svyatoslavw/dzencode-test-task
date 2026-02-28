@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { getOrdersTrend, getProductTypeDistribution, getSellerActivity } from "@/app/api/database"
 import { m } from "@/shared/i18n/messages"
 import { getServerLocale } from "@/shared/lib/locale"
@@ -5,6 +6,9 @@ import { ChartsPanel } from "@/widgets/ChartsPanel"
 import { MapsPanel } from "@/widgets/MapsPanel"
 
 export const dynamic = "force-dynamic"
+export const metadata: Metadata = {
+  title: "Statistics"
+}
 
 export default async function StatisticsPage() {
   const locale = await getServerLocale()
