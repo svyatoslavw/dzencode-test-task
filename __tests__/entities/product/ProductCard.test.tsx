@@ -26,8 +26,8 @@ const createProduct = (overrides: Partial<ProductModel> = {}): ProductModel => (
   orderTitle: "Order #1",
   date: "2024-02-01 00:00:00",
   price: [
-    { value: 2500, symbol: "USD", isDefault: true },
-    { value: 120000, symbol: "UAH", isDefault: false }
+    { value: 250000, symbol: "USD", isDefault: true },
+    { value: 12000000, symbol: "UAH", isDefault: false }
   ],
   ...overrides
 })
@@ -46,8 +46,8 @@ describe("ProductCard", () => {
       </table>
     )
 
-    expect(screen.getByText("2 500 USD")).toBeInTheDocument()
-    expect(screen.getByText("120 000 UAH")).toBeInTheDocument()
+    expect(screen.getByText("2 500.00 USD")).toBeInTheDocument()
+    expect(screen.getByText("120 000.00 UAH")).toBeInTheDocument()
   })
 
   it("shows fallback when currency price is missing", () => {
@@ -55,7 +55,9 @@ describe("ProductCard", () => {
       <table>
         <tbody>
           <ProductCard
-            product={createProduct({ price: [{ value: 2500, symbol: "USD", isDefault: true }] })}
+            product={createProduct({
+              price: [{ value: 250000, symbol: "USD", isDefault: true }]
+            })}
             locale="en"
             setProductIdToDelete={vi.fn()}
           />
@@ -63,7 +65,7 @@ describe("ProductCard", () => {
       </table>
     )
 
-    expect(screen.getByText("2 500 USD")).toBeInTheDocument()
+    expect(screen.getByText("2 500.00 USD")).toBeInTheDocument()
     expect(screen.getByText("— UAH")).toBeInTheDocument()
   })
 })

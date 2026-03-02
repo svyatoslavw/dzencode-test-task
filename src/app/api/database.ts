@@ -223,7 +223,7 @@ const createTables = (db: Database.Database): void => {
     CREATE TABLE IF NOT EXISTS product_prices (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
-      value REAL NOT NULL,
+      value INTEGER NOT NULL,
       symbol TEXT NOT NULL CHECK(symbol IN ('USD', 'UAH')),
       is_default INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
@@ -511,6 +511,8 @@ export const createProduct = ({
   currency,
   orderId
 }: CreateProductParams): number | null => {
+  const UAH_RATE = 42
+  const toCents = (amount: number) => Math.round(amount * 100)
   const targetOrderId = orderExistsById(orderId) ? orderId : null
 
   if (!targetOrderId) {
@@ -523,13 +525,11 @@ export const createProduct = ({
   const productId = nextIdRow.id
   const serialNumber = Number(`${Date.now()}${productId}`.slice(-7))
   const normalizedSeller = seller.trim() || "Unknown seller"
-  const normalizedPrice = Number(price.toFixed(2))
-  const normalizedPriceUSD = Number(
-    (currency === "USD" ? normalizedPrice : normalizedPrice / 42).toFixed(2)
-  )
-  const normalizedPriceUAH = Number(
-    (currency === "UAH" ? normalizedPrice : normalizedPrice * 42).toFixed(2)
-  )
+  const normalizedPriceCents = toCents(price)
+  const normalizedPriceUSD =
+    currency === "USD" ? normalizedPriceCents : Math.round(normalizedPriceCents / UAH_RATE)
+  const normalizedPriceUAH =
+    currency === "UAH" ? normalizedPriceCents : normalizedPriceCents * UAH_RATE
 
   const insertTx = db.transaction(() => {
     db.prepare(

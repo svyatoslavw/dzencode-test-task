@@ -79,7 +79,7 @@ const createTables = () => {
     CREATE TABLE IF NOT EXISTS product_prices (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
-      value REAL NOT NULL,
+      value INTEGER NOT NULL,
       symbol TEXT NOT NULL CHECK(symbol IN ('USD', 'UAH')),
       is_default INTEGER NOT NULL DEFAULT 0,
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
@@ -170,7 +170,7 @@ const seedDatabase = () => {
         })
         const guaranteeEnd = faker.date.future({ years: 3, refDate: guaranteeStart })
 
-        const usdPrice = Number(faker.commerce.price({ min: 60, max: 5000, dec: 2 }))
+        const usdPrice = faker.number.int({ min: 6_000, max: 500_000 })
         const uahPrice = usdPrice * 42
         const defaultSymbol = faker.helpers.arrayElement(["USD", "UAH"])
         const inStock = faker.number.int({ min: 1, max: 10 }) <= 8 ? 1 : 0

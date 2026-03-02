@@ -60,6 +60,11 @@ export const useAuthForm = ({ mode, locale }: { mode: AuthMode; locale: Locale }
       })
     },
     onSuccess: () => {
+      toast.success(
+        mode === "register"
+          ? m.auth_success_register({}, { locale })
+          : m.auth_success_login({}, { locale })
+      )
       router.push("/orders")
       router.refresh()
     }
@@ -72,11 +77,6 @@ export const useAuthForm = ({ mode, locale }: { mode: AuthMode; locale: Locale }
     }
 
     mutation.mutate(values)
-    toast.success(
-      mode === "register"
-        ? m.auth_success_register({}, { locale })
-        : m.auth_success_login({}, { locale })
-    )
   })
 
   return {

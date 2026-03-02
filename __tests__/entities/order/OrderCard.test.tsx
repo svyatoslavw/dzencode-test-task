@@ -31,7 +31,7 @@ describe("OrderCard", () => {
       </table>
     )
 
-    expect(screen.getByText("200 000 USD")).toBeInTheDocument()
-    expect(screen.getByText("5 600 000 UAH")).toBeInTheDocument()
+    expect(screen.getByText("2 000.00 USD")).toBeInTheDocument()
+    expect(screen.getByText("56 000.00 UAH")).toBeInTheDocument()
   })
 })

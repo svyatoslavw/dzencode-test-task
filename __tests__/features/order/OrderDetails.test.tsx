@@ -61,8 +61,8 @@ describe("OrderDetails", () => {
             orderTitle: "Order #1",
             date: "2024-01-01 00:00:00",
             price: [
-              { value: 2500, symbol: "USD", isDefault: true },
-              { value: 120000, symbol: "UAH", isDefault: false }
+              { value: 250000, symbol: "USD", isDefault: true },
+              { value: 12000000, symbol: "UAH", isDefault: false }
             ]
           }
         ]
@@ -94,8 +94,8 @@ describe("OrderDetails", () => {
                 orderTitle: "Order #1",
                 date: "2024-01-01 00:00:00",
                 price: [
-                  { value: 2500, symbol: "USD", isDefault: true },
-                  { value: 120000, symbol: "UAH", isDefault: false }
+                  { value: 250000, symbol: "USD", isDefault: true },
+                  { value: 12000000, symbol: "UAH", isDefault: false }
                 ]
               }
             ],
@@ -119,8 +119,8 @@ describe("OrderDetails", () => {
 
     render(<OrderDetails locale={"en" as never} selectedOrderId={1} onClose={vi.fn()} />)
 
-    expect(screen.getByText("200 000 USD / 5 600 000 UAH")).toBeInTheDocument()
-    expect(screen.getByText("2 500 USD / 120 000 UAH")).toBeInTheDocument()
+    expect(screen.getByText("2 000.00 USD / 56 000.00 UAH")).toBeInTheDocument()
+    expect(screen.getByText("2 500.00 USD / 120 000.00 UAH")).toBeInTheDocument()
   })
 
   it("returns null when no order is selected", () => {
