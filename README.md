@@ -3,6 +3,7 @@
 https://dzencode.statter.space/
 
 Демо - https://drive.google.com/file/d/1ihxLUA01sg0BwqdqnHJ0I-YxLVB3P8-d/view?usp=sharing
+EER Diagram - https://drive.google.com/file/d/1jHu0h9I-bST1JpqWRwRcSh0PTPc1Fezy/view?usp=sharing
 
 Тестовий застосунок для керування приходами та продуктами з авторизацією, статистикою, WebSocket-сесіями та SQLite.
 
